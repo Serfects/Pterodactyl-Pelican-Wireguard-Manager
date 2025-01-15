@@ -53,10 +53,10 @@ function install_script() {
     git clone https://github.com/your-repo/wireguard-script.git "$INSTALL_DIR"
 
     echo "Creating a symlink for easier execution..."
-    ln -sf "$INSTALL_DIR/wireguard_script_base.py" "$SYMLINK"
+    ln -sf "$INSTALL_DIR/src/ppwm/main.py" "$SYMLINK"
 
     echo "Copying script to $WIREGUARD_ETC for reference..."
-    cp "$INSTALL_DIR/wireguard_script_base.py" "$WIREGUARD_ETC/wireguard-manager"
+    cp "$INSTALL_DIR/src/ppwm/main.py" "$WIREGUARD_ETC/wireguard-manager"
 
     echo "Installation complete."
     echo "You can now run the script by typing 'wireguard-manager'."
@@ -94,7 +94,7 @@ function uninstall_script() {
     fi
 
     echo "The following default dependencies remain installed and must be removed manually if desired:"
-    echo "$DEFAULT_DEPENDENCIES"
+        echo "$DEFAULT_DEPENDENCIES"
     echo "To remove them manually, run: sudo apt-get remove --purge -y $DEFAULT_DEPENDENCIES $NON_DEFAULT_DEPENDENCIES"
     echo "Uninstallation complete. Press Enter to return to the main menu."
     read
