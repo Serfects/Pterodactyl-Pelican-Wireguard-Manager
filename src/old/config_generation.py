@@ -67,6 +67,16 @@ def generate_config():
               f"PostDown = iptables -D FORWARD -i {iface} -o {cfg_name} -j ACCEPT\n"
               f"PostDown = iptables -D FORWARD -i {cfg_name} -j ACCEPT\n")
 
+postup = (f"PostUp = iptables -t nat -A POSTROUTING -s {subnet_cidr} -o {iface} -j SNAT --to-source {pub_ip}\n"
+          f"PostUp = iptables -I FORWARD 1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT\n"
+          f"PostUp = iptables -A FORWARD -i {iface} -o {cfg_name} -j ACCEPT\n"
+          f"PostUp = iptables -A FORWARD -i {cfg_name} -j ACCEPT\n"
+          f"{server_allow_deny}"
+          f"PostDown = iptables -t nat -D POSTROUTING -s {subnet_cidr} -o {iface} -j SNAT --to-source {pub_ip}\n"
+          f"PostDown = iptables -D FORWARD 1 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT\n"
+          f"PostDown = iptables -D FORWARD -i {iface} -o {cfg_name} -j ACCEPT\n"
+          f"PostDown = iptables -D FORWARD -i {cfg_name} -j ACCEPT\n")
+
     out_dir = f"/etc/wireguard/{cfg_name}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
     os.makedirs(out_dir, exist_ok=True)
 
@@ -74,6 +84,21 @@ def generate_config():
 Address = {wg_ip}
 {f'MTU = {mtu}\n' if include_mtu else ''}ListenPort = {port}
 PrivateKey = {srv_priv}
+# Performance optimizations
+FwMark = 0xca6c
+Table = off
+# TCP/UDP optimizations for high-throughput routing
+PostUp = sysctl -w net.ipv4.tcp_congestion_control=bbr
+PostUp = sysctl -w net.core.default_qdisc=fq
+PostUp = sysctl -w net.core.rmem_max=2500000
+PostUp = sysctl -w net.core.wmem_max=2500000
+PostUp = sysctl -w net.core.netdev_max_backlog=5000
+# Reset on disconnect
+PostDown = sysctl -w net.ipv4.tcp_congestion_control=cubic
+PostDown = sysctl -w net.core.default_qdisc=pfifo_fast
+PostDown = sysctl -w net.core.rmem_max=212992
+PostDown = sysctl -w net.core.wmem_max=212992
+PostDown = sysctl -w net.core.netdev_max_backlog=1000
 {postup}
 
 # Categories and Subsections
@@ -92,7 +117,25 @@ Address = {client_ip}/24
 PrivateKey = {cli_priv}
 {f'DNS = {dns_ip}\n' if include_dns else ''}
 {f'MTU = {mtu}\n' if include_mtu else ''}
-{client_allow_deny}[Peer]
+# Performance optimizations
+FwMark = 0xca6c
+Table = off
+# TCP optimization for game server hosting
+PostUp = sysctl -w net.ipv4.tcp_congestion_control=bbr
+PostUp = sysctl -w net.core.default_qdisc=fq
+# UDP optimizations
+PostUp = sysctl -w net.core.rmem_max=2500000
+PostUp = sysctl -w net.core.wmem_max=2500000
+PostUp = sysctl -w net.core.netdev_max_backlog=5000
+# Reset on disconnect
+PostDown = sysctl -w net.ipv4.tcp_congestion_control=cubic
+PostDown = sysctl -w net.core.default_qdisc=pfifo_fast
+PostDown = sysctl -w net.core.rmem_max=212992
+PostDown = sysctl -w net.core.wmem_max=212992
+PostDown = sysctl -w net.core.netdev_max_backlog=1000
+{client_allow_deny}
+
+[Peer]
 PublicKey = {srv_pub}
 Endpoint = {pub_ip}:{port}
 AllowedIPs = 0.0.0.0/0
