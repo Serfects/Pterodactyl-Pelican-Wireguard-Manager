@@ -1,3 +1,4 @@
+
 """
 Display utilities for consistent terminal output formatting.
 

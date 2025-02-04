@@ -1,7 +1,8 @@
+
 from colorama import Fore, Style, Back
-from typing import Optional, Union, List, Tuple, Callable, Any
-import time
-import sys
+from typing import Optional, Union, List, Tuple, Callable, Any, NoReturn
+import os
+from display_utils import center_text, create_border  # Added for status bar formatting
 
 # Custom exceptions for better error handling and classification
 # These help distinguish between different types of errors that can occur
@@ -14,6 +15,11 @@ class MenuExecutionError(Exception):
     """Custom exception for menu execution errors."""
     pass
 
+# Add new exception for status bar related errors
+class StatusBarError(Exception):
+    """Custom exception for status bar display errors."""
+    pass
+
 # Type definitions for improved code clarity and IDE support
 # These types help define the structure of choices that can be passed to get_input:
 # - Simple strings: ["option1", "option2"]
@@ -22,6 +28,54 @@ class MenuExecutionError(Exception):
 ChoiceType = Union[str, Tuple[str, str], Tuple[str, str, str]]
 ValidatorType = Callable[[str], bool]
 ChoicesType = Optional[List[ChoiceType]]
+
+ASCII_ART = f"""{Fore.LIGHTWHITE_EX}::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::{Fore.LIGHTCYAN_EX}             ____  ______        ______             {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            |  _ \|  _ \ \      / / ___|            {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            | |_) | |_) \ \ /\ / / |  _             {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            |  __/|  __/ \ V  V /| |_| |            {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            |_|   |_|     \_/\_/  \____|            {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                                                    {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}        Pterodactyl-Pelican-Wireguard-Manager       {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                    By: Serfects                    {Fore.LIGHTWHITE_EX}::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::${Style.RESET_ALL}"""
+
+def display_status_bar(path: str, max_length: int = 70) -> None:
+    """Display the status bar with the current menu path, truncated if necessary.
+    
+    Args:
+        path (str): The complete navigation path to display.
+        max_length (int, optional): Maximum allowed characters before truncation.
+            Defaults to 70 characters.
+    
+    Raises:
+        StatusBarError: If the path is empty or contains invalid characters.
+        ValueError: If max_length is less than 10 characters (minimum reasonable width).
+    """
+    if not path:
+        raise StatusBarError("Status bar path cannot be empty")
+    if max_length < 10:
+        raise ValueError("Status bar max_length must be at least 10 characters")
+
+    # Truncate the status path if it is too long to maintain a single line display
+    if len(path) > max_length:
+        path = "..." + path[-(max_length - 3):]
+    status_bar = f"{Fore.LIGHTWHITE_EX}[ {Fore.LIGHTCYAN_EX}{path}{Fore.LIGHTWHITE_EX} ]{Style.RESET_ALL}"
+    # Use center_text from displayutil to center the status bar within the terminal width
+    print(center_text(status_bar))
+    # Print a border below the status bar for visual separation
+    print(create_border())
+
+def clear_screen(path: str = "Main Menu") -> None:
+    """Clear the terminal screen, display ASCII art, and show status bar."""
+    try:
+        os.system('clear')  # Linux clear command
+        print(ASCII_ART)
+        display_status_bar(path)
+    except OSError as e:
+        raise OSError(f"Failed to clear screen: {str(e)}")  # If 'clear' command fails
+    except Exception as e:
+        raise StatusBarError(f"Failed to display status bar: {str(e)}")  # Other errors
 
 def get_input(
     prompt: str,
@@ -32,7 +86,7 @@ def get_input(
 ) -> str:
     """
     Enhanced input function with formatted display options and standardized prompting.
-
+    
     Args:
         prompt (str): The main prompt text to display to the user
         default (Optional[str]): Default value if user provides no input
@@ -50,7 +104,15 @@ def get_input(
     Raises:
         InputValidationError: If validation fails and retry is not possible
         KeyboardInterrupt: If user interrupts input (Ctrl+C)
+    
+    Note:
+        This function clears the screen (thus printing the ASCII art and status bar)
+        then prints the prompt and available choices. It uses ANSI escape codes to rewrite
+        the prompt line with the input for a single-line experience.
     """
+    # Clear the screen before displaying the prompt (this also reprints the status bar)
+    clear_screen()
+    
     # Display Section:
     # The prompt is shown in yellow without bold to be visible but not overwhelming
     # This creates a clear visual hierarchy where the prompt stands out but doesn't dominate
@@ -144,6 +206,9 @@ def confirm_action(prompt: str) -> bool:
     Raises:
         KeyboardInterrupt: If user interrupts input (Ctrl+C)
     """
+    # Clear the screen before displaying the prompt
+    clear_screen()
+    
     def yes_no_validator(value: str) -> bool:
         return value.lower() in ['yes', 'no', 'y', 'n']
     
@@ -154,36 +219,3 @@ def confirm_action(prompt: str) -> bool:
     except KeyboardInterrupt:
         print(f"\n{Fore.YELLOW}Operation cancelled by user{Style.RESET_ALL}")
         return False
-
-# Progress Indicator:
-# Visual feedback for operations that take time
-# - Shows message in bright magenta for visibility
-# - Displays cyan dots at regular intervals
-# - Completes with green checkmark and message
-# - Handles interrupts gracefully with cleanup
-def show_progress(message: str, duration: Union[int, float]) -> None:
-    """
-    Show a simple progress indicator with formatted output.
-
-    Args:
-        message (str): The message to display during progress
-        duration (Union[int, float]): Duration in seconds for the progress indication
-
-    Raises:
-        ValueError: If duration is negative
-        KeyboardInterrupt: If user interrupts progress (Ctrl+C)
-    """
-    if duration < 0:
-        raise ValueError("Duration must be non-negative")
-
-    try:
-        print(f"\n{Fore.LIGHTMAGENTA_EX}{message}...{Style.RESET_ALL}")
-        dots = int(duration * 6)
-        for _ in range(dots):
-            sys.stdout.write(f"{Fore.LIGHTCYAN_EX}·{Style.RESET_ALL}")
-            sys.stdout.flush()
-            time.sleep(0.167)
-        print(f"\n{Fore.LIGHTGREEN_EX}✓ {Fore.GREEN}Complete!{Style.RESET_ALL}")
-    except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}Progress interrupted{Style.RESET_ALL}")
-        raise
