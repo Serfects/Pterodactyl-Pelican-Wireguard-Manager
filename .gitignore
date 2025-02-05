@@ -120,3 +120,6 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Commit log
+commit_log.md

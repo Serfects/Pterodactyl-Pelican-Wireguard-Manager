@@ -1,0 +1,124 @@
+
+### Save to File:
+
+```bash
+# Create the directory if it doesn't exist
+mkdir -p /workspaces/Pterodactyl-Pelican-Wireguard-Manager/context/
+
+# Save the content to a file
+cat <<EOF > /workspaces/Pterodactyl-Pelican-Wireguard-Manager/context/git_instructions.md
+# Git Commands and Instructions
+
+## Reset Branch to a Specific Commit
+
+### Steps:
+1. **Identify the commit hash**:
+   - Use \`git log\` to find the commit hash you want to reset to.
+
+2. **Reset the branch**:
+   - Use \`git reset --hard <commit-hash>\` to reset the branch to the specific commit, discarding all current changes.
+
+3. **Clean untracked files**:
+   - Use \`git clean -fd\` to remove any untracked files and directories.
+
+### Commands:
+\`\`\`bash
+# 1. View commit history to find the commit hash
+git log
+
+# 2. Reset branch to the specific commit
+git reset --hard <commit-hash>
+
+# 3. Remove untracked files and directories
+git clean -fd
+\`\`\`
+
+## Create a New Branch from a Specific Commit
+
+### Steps:
+1. **Identify the commit hash**:
+   - Use \`git log\` to find the commit hash you want to revert to.
+
+2. **Create a new branch from the specific commit**:
+   - Use \`git checkout -b <new-branch-name> <commit-hash>\` to create a new branch from that commit.
+
+3. **Continue working on the new branch**:
+   - You can now continue working from the exact state of the desired commit.
+
+### Commands:
+\`\`\`bash
+# 1. View commit history to find the commit hash
+git log
+
+# 2. Create a new branch from the specific commit
+git checkout -b <new-branch-name> <commit-hash>
+\`\`\`
+
+## Merge Changes from New Branch to Target Branch
+
+### Steps:
+1. **Commit your changes**:
+   - Ensure all your changes are committed in the new branch.
+
+2. **Switch to the target branch**:
+   - Use \`git checkout\` to switch to the branch you want to merge into (e.g., \`main\`).
+
+3. **Merge the new branch**:
+   - Use \`git merge\` to merge the changes from the new branch into the target branch.
+
+### Commands:
+\`\`\`bash
+# 1. Ensure all changes are committed in the new branch
+git add .
+git commit -m "Your commit message"
+
+# 2. Switch to the target branch (e.g., main)
+git checkout main
+
+# 3. Merge the new branch into the target branch
+git merge <new-branch-name>
+\`\`\`
+
+### Example:
+\`\`\`bash
+# Ensure all changes are committed in the new branch
+git add .
+git commit -m "Work done on revert-to-abc1234 branch"
+
+# Switch to the main branch
+git checkout main
+
+# Merge the new branch into the main branch
+git merge revert-to-abc1234
+\`\`\`
+
+### Verify:
+\`\`\`bash
+# Check the status to ensure everything is merged correctly
+git status
+
+# View the commit history to verify the merge
+git log --graph --oneline --all
+\`\`\`
+
+### Handling Merge Conflicts:
+If there are merge conflicts, Git will notify you. You will need to resolve these conflicts manually:
+
+1. **Open conflicting files**:
+   - Edit the files to resolve conflicts.
+
+2. **Mark conflicts as resolved**:
+   - Use \`git add\` to mark conflicts as resolved.
+
+3. **Commit the merge**:
+   - Use \`git commit\` to complete the merge.
+
+### Commands for resolving conflicts:
+\`\`\`bash
+# After resolving conflicts in files
+git add <resolved-file>
+
+# Commit the merge
+git commit
+\`\`\`
+EOF
