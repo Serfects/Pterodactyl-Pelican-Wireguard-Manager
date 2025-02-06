@@ -1,4 +1,7 @@
 import re
+import sys
+import os
+import time
 from colorama import Style, Fore
 
 SCREEN_WIDTH = 80
@@ -54,3 +57,52 @@ def format_error(text):
 
 def format_success(text):
     return f"{Fore.LIGHTGREEN_EX}✓ {text}{Style.RESET_ALL}"
+
+def show_progress(message, duration=1.5):
+    if duration < 0:
+        raise ValueError("Duration must be non-negative")
+
+    try:
+        print(f"\n{Fore.LIGHTMAGENTA_EX}{message}...{Style.RESET_ALL}")
+        # Always show 20 dots with delay calculated from duration
+        dots = 20
+        delay = duration / dots
+        for _ in range(dots):
+            sys.stdout.write(f"{Fore.LIGHTCYAN_EX}·{Style.RESET_ALL}")
+            sys.stdout.flush()
+            time.sleep(delay)
+        print(f"\n{Fore.LIGHTGREEN_EX}✓ {Fore.GREEN}Complete!{Style.RESET_ALL}")
+    except KeyboardInterrupt:
+        print(f"\n{Fore.YELLOW}Progress interrupted{Style.RESET_ALL}")
+        raise
+
+# ASCII art for consistent header display across all screens
+ASCII_ART = f"""{Fore.LIGHTWHITE_EX}::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::{Fore.LIGHTCYAN_EX}             ____  ______        ______             {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            |  _ \|  _ \ \      / / ___|            {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            | |_) | |_) \ \ /\ / / |  _             {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            |  __/|  __/ \ V  V /| |_| |            {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}            |_|   |_|     \_/\_/  \____|            {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                                                    {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}        Pterodactyl-Pelican-Wireguard-Manager       {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                    By: Serfects                    {Fore.LIGHTWHITE_EX}::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::${Style.RESET_ALL}"""
+
+def clear_screen():
+    # Clear terminal screen based on OS
+    os.system('clear' if os.name == 'posix' else 'cls')
+
+def display_screen(title, content_func=None):
+    # Clear screen and display ASCII header
+    clear_screen()
+    centered_ascii = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
+    print(centered_ascii)
+    
+    # Display title section with borders
+    print("\n" + create_border())
+    print(center_text(f"{Fore.YELLOW}{title}{Style.RESET_ALL}"))
+    print(create_border() + "\n")
+    
+    # Run the content function if provided
+    if content_func:
+        content_func()

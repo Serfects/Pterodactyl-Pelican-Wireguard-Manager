@@ -1,31 +1,12 @@
-import os
 import sys
 from colorama import init, Fore, Style
-from disp_utils import center_text, create_border
-from general_utils import get_input, confirm_action, show_progress, MenuExecutionError
+from disp_utils import display_screen, create_border, center_text, show_progress
+from general_utils import get_input, confirm_action, MenuExecutionError
 
 init()
 
-ASCII_ART = f"""{Fore.LIGHTWHITE_EX}::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::{Fore.LIGHTCYAN_EX}             ____  ______        ______             {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            |  _ \|  _ \ \      / / ___|            {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            | |_) | |_) \ \ /\ / / |  _             {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            |  __/|  __/ \ V  V /| |_| |            {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            |_|   |_|     \_/\_/  \____|            {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                                                    {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}        Pterodactyl-Pelican-Wireguard-Manager       {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                    By: Serfects                    {Fore.LIGHTWHITE_EX}::
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::${Style.RESET_ALL}"""
-
-def main_menu():
-    os.system('clear' if os.name == 'posix' else 'cls')
-    centered_ascii_art = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
-    print(centered_ascii_art)
-    
-    print("\n" + create_border())
-    print(center_text(f"{Fore.YELLOW}Main Menu{Style.RESET_ALL}"))
-    print(create_border() + "\n")
-    
+def display_menu_options():
+    # Define and display main menu options
     menu_options = [
         ("1", "Feature 1", "First feature placeholder"),
         ("2", "Feature 2", "Second feature placeholder"),
@@ -36,6 +17,10 @@ def main_menu():
         "Please select an option",
         choices=menu_options
     )
+
+def main_menu():
+    # Display main menu using consistent screen layout
+    return display_screen("Main Menu", display_menu_options)
 
 def run_menu_function(func, loading_message):
     try:
