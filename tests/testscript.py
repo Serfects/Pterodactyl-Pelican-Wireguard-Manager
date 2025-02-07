@@ -3,13 +3,16 @@ import sys
 from colorama import init, Fore, Style
 
 # Import from main modules (these work because PYTHONPATH includes src/ppwm-dev)
-from disp_utils import display_screen, show_progress, center_text, create_border
+from disp_utils import display_screen, show_progress, center_text, create_border, BreadcrumbTracker
 from general_utils import get_input, confirm_action, MenuExecutionError
 
 # Initialize colorama for cross-platform color support
 init()
 
 def test_utils_features():
+    breadcrumbs = BreadcrumbTracker.get_instance()
+    breadcrumbs.push("Utils Testing")
+    
     # Test general utility functions with various input types
     display_screen("Utils Testing", lambda: None)
     
@@ -36,7 +39,10 @@ def test_utils_features():
     )
     
     # Display results
+    breadcrumbs.push("Test Results")
     display_screen("Test Results", lambda: print_test_results(name, port, color, role, score))
+    breadcrumbs.pop()
+    breadcrumbs.pop()
     input("\nPress Enter to continue...")
 
 def print_test_results(name, port, color, role, score):
@@ -48,6 +54,9 @@ def print_test_results(name, port, color, role, score):
     print(f"Score: {Fore.WHITE}{score}{Style.RESET_ALL}")
 
 def mock_generate_config():
+    breadcrumbs = BreadcrumbTracker.get_instance()
+    breadcrumbs.push("Config Generator")
+    
     display_screen("Config Generator", lambda: None)
     show_progress("Checking system requirements", 1.5)
     
@@ -62,9 +71,13 @@ def mock_generate_config():
         show_progress("Creating configuration files", 1.5)
         print(center_text(f"\n{Fore.GREEN}Configuration generated successfully!{Style.RESET_ALL}"))
     
+    breadcrumbs.pop()
     input("\nPress Enter to continue...")
 
 def mock_backup_restore():
+    breadcrumbs = BreadcrumbTracker.get_instance()
+    breadcrumbs.push("Backup and Restore")
+    
     while True:
         display_screen("Backup and Restore", lambda: None)
         choice = get_input("Select operation", choices=[
@@ -78,22 +91,31 @@ def mock_backup_restore():
             break
             
         if choice == "1":
+            breadcrumbs.push("Create Backup")
             if confirm_action("Create new backup?"):
                 show_progress("Creating backup", 2)
                 print(center_text(f"\n{Fore.GREEN}Backup created successfully!{Style.RESET_ALL}"))
+            breadcrumbs.pop()
         elif choice == "2":
+            breadcrumbs.push("Restore Backup")
             if confirm_action("Restore from backup?"):
                 show_progress("Restoring configuration", 2)
                 print(center_text(f"\n{Fore.GREEN}Configuration restored!{Style.RESET_ALL}"))
+            breadcrumbs.pop()
         elif choice == "3":
+            breadcrumbs.push("View Backups")
             show_progress("Loading backup list", 1.5)
             print("\nAvailable Backups:")
             print(f"  {Style.DIM}•{Style.RESET_ALL} backup_20240101_120000.tar.gz")
             print(f"  {Style.DIM}•{Style.RESET_ALL} backup_20240102_153000.tar.gz")
+            breadcrumbs.pop()
         
         input("\nPress Enter to continue...")
 
 def main():
+    breadcrumbs = BreadcrumbTracker.get_instance()
+    breadcrumbs.reset()  # Start fresh at main menu
+    
     # Verify we're running in test environment
     if not os.getenv('TESTING'):
         print(f"{Fore.YELLOW}Warning: Not running in test environment{Style.RESET_ALL}")

@@ -4,6 +4,9 @@ import sys
 from pathlib import Path
 
 def create_test_env():
+    # Print Python version info
+    print(f"[INFO] Using Python {sys.version.split()[0]} to create virtual environment")
+    
     # Define project root and ensure its a Path object
     project_root = Path("/workspaces/Pterodactyl-Pelican-Wireguard-Manager").resolve()
     
