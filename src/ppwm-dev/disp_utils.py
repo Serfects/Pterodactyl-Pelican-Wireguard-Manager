@@ -9,68 +9,77 @@ from colorama import Style, Fore
 #######################
 
 class DisplayConfig:
-    # Global display configuration
-    SCREEN_WIDTH = 64
-    PADDING = 2
+    # Master configuration for all display elements
+    SCREEN_WIDTH = 65  # Maximum width for all display elements
     
     class Header:
-        # Header-specific display settings
-        ASCII_BORDER = "═"
-        SIDE_BORDER = "::"
-        BREADCRUMB_BORDER = "─"
+        # Border and color settings for header components
+        BORDER = "::"  # Unified border style for ASCII art frame
+        BREADCRUMB_BORDER = "─"  # Separator below breadcrumb
         BREADCRUMB_COLOR = Fore.LIGHTCYAN_EX
         ASCII_COLOR = Fore.LIGHTCYAN_EX
         BORDER_COLOR = Fore.LIGHTWHITE_EX
     
     class Title:
-        # Title section display settings
-        BORDER_CHAR = "="
+        # Settings for section titles
+        BORDER_CHAR = "="  # Separator for section titles
         COLOR = Fore.YELLOW
 
+# Regex for stripping ANSI color codes
 ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
 class DisplayError(Exception):
+    # Custom exception for display-related errors
     pass
 
 #################################
-# Header Components (ASCII & Breadcrumb)
+# Header Components
 #################################
 
-# ASCII Art Definition
-ASCII_ART = f"""{DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.ASCII_BORDER * DisplayConfig.SCREEN_WIDTH}
-{DisplayConfig.Header.SIDE_BORDER}{DisplayConfig.Header.ASCII_COLOR}       ____       ____  ______        ____  __       ____       {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.SIDE_BORDER}
-{DisplayConfig.Header.SIDE_BORDER}{DisplayConfig.Header.ASCII_COLOR}       \ \ \     |  _ \|  _ \ \      / /  \/  |     / / /       {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.SIDE_BORDER}
-{DisplayConfig.Header.SIDE_BORDER}{DisplayConfig.Header.ASCII_COLOR}        \ \ \    | |_) | |_) \ \ /\ / /| |\/| |    / / /        {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.SIDE_BORDER}
-{DisplayConfig.Header.SIDE_BORDER}{DisplayConfig.Header.ASCII_COLOR}        / / /    |  __/|  __/ \ V  V / | |  | |    \ \ \        {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.SIDE_BORDER}
-{DisplayConfig.Header.SIDE_BORDER}{DisplayConfig.Header.ASCII_COLOR}       /_/_/     |_|   |_|     \_/\_/  |_|  |_|     \_\_\       {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.SIDE_BORDER}
-{DisplayConfig.Header.SIDE_BORDER}{DisplayConfig.Header.ASCII_COLOR}                                                                {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.SIDE_BORDER}
-{DisplayConfig.Header.SIDE_BORDER}{DisplayConfig.Header.ASCII_COLOR}             Pterodactyl-Pelican-Wireguard-Manager              {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.SIDE_BORDER}
-{DisplayConfig.Header.ASCII_BORDER * DisplayConfig.SCREEN_WIDTH}${Style.RESET_ALL}"""
+# ASCII Art frame with ANSI-safe backslashes
+ASCII_ART = fr"""{DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER * DisplayConfig.SCREEN_WIDTH}
+{DisplayConfig.Header.BORDER}{DisplayConfig.Header.ASCII_COLOR}     ____       ____  ______        ____  __       ____     {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER}
+{DisplayConfig.Header.BORDER}{DisplayConfig.Header.ASCII_COLOR}     \ \ \     |  _ \|  _ \ \      / /  \/  |     / / /     {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER}
+{DisplayConfig.Header.BORDER}{DisplayConfig.Header.ASCII_COLOR}      \ \ \    | |_) | |_) \ \ /\ / /| |\/| |    / / /      {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER}
+{DisplayConfig.Header.BORDER}{DisplayConfig.Header.ASCII_COLOR}      / / /    |  __/|  __/ \ V  V / | |  | |    \ \ \      {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER}
+{DisplayConfig.Header.BORDER}{DisplayConfig.Header.ASCII_COLOR}     /_/_/     |_|   |_|     \_/\_/  |_|  |_|     \_\_\     {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER}
+{DisplayConfig.Header.BORDER}{DisplayConfig.Header.ASCII_COLOR}                                                            {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER}
+{DisplayConfig.Header.BORDER}{DisplayConfig.Header.ASCII_COLOR}            Pterodactyl-Pelican-Wireguard-Manager           {DisplayConfig.Header.BORDER_COLOR}{DisplayConfig.Header.BORDER}
+{DisplayConfig.Header.BORDER * DisplayConfig.SCREEN_WIDTH}{Style.RESET_ALL}"""
 
 class BreadcrumbTracker:
+    # Singleton for managing navigation breadcrumb
     _instance = None
     _path = ["Main Menu"]
     
     @classmethod
     def get_instance(cls):
+        # Ensure single instance for consistent navigation state
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
     
     def push(self, menu_name):
+        # Add new menu level to path
+        if not isinstance(menu_name, str):
+            raise DisplayError("Menu name must be a string")
         self._path.append(menu_name)
     
     def pop(self):
+        # Remove last menu level, preventing removal of main menu
         if len(self._path) > 1:
             return self._path.pop()
         return None
     
     def reset(self):
+        # Reset to initial state
         self._path = ["Main Menu"]
     
-    def get_path(self, max_width=64):
+    def get_path(self, max_width=65):
+        # Generate breadcrumb path with intelligent truncation
         if not self._path:
             return ""
+            
         separator = f" {Fore.LIGHTBLACK_EX}>{Style.RESET_ALL} "
         full_path = separator.join(self._path)
         stripped_len = len(strip_ansi(full_path))
@@ -78,90 +87,95 @@ class BreadcrumbTracker:
         if stripped_len <= max_width:
             return full_path
         
-        visible_width = max_width - 3
-        current = self._path[-1]
-        previous = self._path[-2] if len(self._path) > 1 else ""
+        # Smart truncation to show maximum possible menu items
+        available_width = max_width - 3  # Space for "..."
+        items = []
+        current_width = 0
         
-        if len(strip_ansi(current)) + len(strip_ansi(previous)) + len(separator) + 3 <= visible_width:
-            return f"...{separator}{previous}{separator}{current}"
-        return f"...{separator}{current}"
-
-def display_ascii_header():
-    # Handles ASCII art display with consistent spacing
-    try:
-        centered_ascii = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
-        print(centered_ascii.rstrip())
-    except DisplayError as e:
-        print(format_error(f"ASCII Header Error: {e}"))
-        return False
-    return True
-
-def display_breadcrumb():
-    # Handles breadcrumb display with consistent spacing
-    try:
-        breadcrumb = BreadcrumbTracker.get_instance()
-        path = breadcrumb.get_path(DisplayConfig.SCREEN_WIDTH)
-        print(center_text(
-            f"{DisplayConfig.Header.BREADCRUMB_COLOR}{path}{Style.RESET_ALL}"
-        ))
-        print(create_border(char=DisplayConfig.Header.BREADCRUMB_BORDER))
-    except DisplayError as e:
-        print(format_error(f"Breadcrumb Error: {e}"))
-        return False
-    return True
+        # Always include current location
+        current = self._path[-1]
+        items.insert(0, current)
+        current_width = len(strip_ansi(current))
+        
+        # Add previous items that fit
+        for item in reversed(self._path[:-1]):
+            item_len = len(strip_ansi(item)) + len(strip_ansi(separator))
+            if current_width + item_len <= available_width:
+                items.insert(0, item)
+                current_width += item_len
+            else:
+                break
+        
+        return f"...{separator}" + separator.join(items)
 
 #################################
 # Display Utilities
 #################################
 
 def strip_ansi(text):
+    # Remove ANSI color codes for length calculations
+    if not isinstance(text, str):
+        raise DisplayError("Text must be a string")
     return ANSI_ESCAPE.sub('', text)
 
-def split_formatting(text):
-    parts = text.split(Style.RESET_ALL)
-    if len(parts) != 2:
-        return '', text, ''
-    return parts[0], parts[1].strip(), Style.RESET_ALL
-
-def center_text(text, width=None, fill_char=" "):
-    if not fill_char:
-        raise ValueError("Fill character cannot be empty")
-    actual_width = width if width is not None else DisplayConfig.SCREEN_WIDTH
-    if actual_width < 0:
-        raise ValueError("Width cannot be negative")
+def center_text(text):
+    # Center text while handling ANSI color codes
+    if not isinstance(text, str):
+        raise DisplayError("Text must be a string")
     stripped_text = strip_ansi(text)
-    if len(stripped_text) > actual_width:
-        raise DisplayError(f"Text length ({len(stripped_text)}) exceeds width ({actual_width})")
-    padding = (actual_width - len(stripped_text)) // 2
-    return (fill_char * padding) + text + (fill_char * (actual_width - len(stripped_text) - padding))
+    padding = (DisplayConfig.SCREEN_WIDTH - len(stripped_text)) // 2
+    return (" " * padding) + text + (" " * (DisplayConfig.SCREEN_WIDTH - len(stripped_text) - padding))
 
-def create_border(char=None, width=None):
-    if not char:
-        char = DisplayConfig.Title.BORDER_CHAR
-    if not char.strip():
-        raise ValueError("Border character cannot be empty or whitespace")
-    actual_width = width if width is not None else DisplayConfig.SCREEN_WIDTH
-    if actual_width < 0:
-        raise ValueError("Width cannot be negative")
-    return char * actual_width
-
-def format_option(key, text, padding=None):
-    if not key or not text:
-        raise ValueError("Key and text must not be empty")
-    actual_padding = padding if padding is not None else DisplayConfig.PADDING
-    if actual_padding < 0:
-        raise ValueError("Padding cannot be negative")
-    return " " * actual_padding + f"{key}. {text}"
+def create_border(char=None):
+    # Create horizontal border with specified character
+    border_char = char or DisplayConfig.Title.BORDER_CHAR
+    if not border_char or not border_char.strip():
+        raise DisplayError("Border character cannot be empty")
+    return border_char * DisplayConfig.SCREEN_WIDTH
 
 def format_error(text):
+    # Format error messages with warning symbol
+    if not isinstance(text, str):
+        return f"{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}Invalid error message{Style.RESET_ALL}"
     return f"{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}{text}{Style.RESET_ALL}"
 
 def format_success(text):
+    # Format success messages with checkmark
+    if not isinstance(text, str):
+        raise DisplayError("Success message must be a string")
     return f"{Fore.LIGHTGREEN_EX}✓ {text}{Style.RESET_ALL}"
 
+#################################
+# Screen Management
+#################################
+
+def display_ascii_header():
+    # Display ASCII art header with error handling
+    try:
+        print(ASCII_ART.strip())
+        return True
+    except Exception as e:
+        print(format_error(f"ASCII Header Error: {str(e)}"))
+        return False
+
+def display_breadcrumb():
+    # Display navigation breadcrumb with error handling
+    try:
+        breadcrumb = BreadcrumbTracker.get_instance()
+        path = breadcrumb.get_path(DisplayConfig.SCREEN_WIDTH)
+        print(center_text(f"{DisplayConfig.Header.BREADCRUMB_COLOR}{path}{Style.RESET_ALL}"))
+        print(create_border(DisplayConfig.Header.BREADCRUMB_BORDER))
+        return True
+    except DisplayError as e:
+        print(format_error(f"Breadcrumb Error: {e}"))
+        return False
+
 def show_progress(message, duration=1.5):
+    # Show progress indicator with dots
+    if not isinstance(message, str):
+        raise DisplayError("Progress message must be a string")
     if duration < 0:
-        raise ValueError("Duration must be non-negative")
+        raise DisplayError("Duration must be non-negative")
 
     try:
         print(f"\n{Fore.LIGHTMAGENTA_EX}{message}...{Style.RESET_ALL}")
@@ -176,25 +190,29 @@ def show_progress(message, duration=1.5):
         print(f"\n{Fore.YELLOW}Progress interrupted{Style.RESET_ALL}")
         raise
 
-#################################
-# Screen Management
-#################################
-
 def clear_screen():
+    # Clear terminal screen (cross-platform)
     os.system('clear' if os.name == 'posix' else 'cls')
 
 def display_screen(title, content_func=None):
-    # Main display coordinator
+    # Main screen display coordinator
+    if not isinstance(title, str):
+        print(format_error("Invalid title"))
+        return False
+
     clear_screen()
-    
     if not display_ascii_header() or not display_breadcrumb():
         return False
     
-    print("\n" + create_border())
-    print(center_text(f"{DisplayConfig.Title.COLOR}{title}{Style.RESET_ALL}"))
-    print(create_border() + "\n")
-    
-    if content_func:
-        content_func()
-    
-    return True
+    try:
+        print("\n" + create_border())
+        print(center_text(f"{DisplayConfig.Title.COLOR}{title}{Style.RESET_ALL}"))
+        print(create_border() + "\n")
+        
+        if content_func:
+            content_func()
+        
+        return True
+    except Exception as e:
+        print(format_error(f"Screen display error: {str(e)}"))
+        return False

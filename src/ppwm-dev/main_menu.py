@@ -1,12 +1,18 @@
 import sys
 from colorama import init, Fore, Style
-from disp_utils import display_screen, create_border, center_text, show_progress
+from disp_utils import (
+    display_screen, 
+    create_border, 
+    center_text, 
+    show_progress,
+    DisplayConfig  # Add import for configuration
+)
 from general_utils import get_input, confirm_action, MenuExecutionError
 
 init()
 
 def display_menu_options():
-    # Define and display main menu options
+    # Define and display main menu options with consistent padding
     menu_options = [
         ("1", "Feature 1", "First feature placeholder"),
         ("2", "Feature 2", "Second feature placeholder"),
@@ -32,7 +38,7 @@ def graceful_exit(message="", exit_code=0):
     if message:
         print(center_text(f"\n{Fore.YELLOW}{message}{Style.RESET_ALL}"))
     print(center_text(f"\n{Fore.YELLOW}Thank you for using WireGuard Management{Style.RESET_ALL}"))
-    print(create_border())
+    print(create_border(char=DisplayConfig.Header.BREADCRUMB_BORDER))  # Use consistent border style
     sys.exit(exit_code)
 
 def test_feature_1():
