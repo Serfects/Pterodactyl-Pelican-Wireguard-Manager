@@ -7,14 +7,14 @@ from general_utils import get_input, confirm_action, show_progress, MenuExecutio
 init()
 
 ASCII_ART = f"""{Fore.LIGHTWHITE_EX}::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::{Fore.LIGHTCYAN_EX}             ____  ______        ______             {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            |  _ \|  _ \ \      / / ___|            {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            | |_) | |_) \ \ /\ / / |  _             {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            |  __/|  __/ \ V  V /| |_| |            {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}            |_|   |_|     \_/\_/  \____|            {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                                                    {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}        Pterodactyl-Pelican-Wireguard-Manager       {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                    By: Serfects                    {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}____       ____  ______        ____  __       ____{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}\ \ \     |  _ \|  _ \ \      / /  \/  |     / / /{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX} \ \ \    | |_) | |_) \ \ /\ / /| |\/| |    / / / {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX} / / /    |  __/|  __/ \ V  V / | |  | |    \ \ \ {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}/_/_/     |_|   |_|     \_/\_/  |_|  |_|     \_\_\{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                                                  {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}       Pterodactyl-Pelican-Wireguard-Manager      {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                   By: Serfects                   {Fore.LIGHTWHITE_EX}::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::${Style.RESET_ALL}"""
 
 def main_menu():

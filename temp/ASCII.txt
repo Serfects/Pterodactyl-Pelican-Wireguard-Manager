@@ -1,0 +1,10 @@
+ASCII_ART = f"""{Fore.LIGHTWHITE_EX}::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::{Fore.LIGHTCYAN_EX}____       ____  ______        ____  __       ____{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}\ \ \     |  _ \|  _ \ \      / /  \/  |     / / /{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX} \ \ \    | |_) | |_) \ \ /\ / /| |\/| |    / / / {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX} / / /    |  __/|  __/ \ V  V / | |  | |    \ \ \ {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}/_/_/     |_|   |_|     \_/\_/  |_|  |_|     \_\_\{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                                                  {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}       Pterodactyl-Pelican-Wireguard-Manager      {Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                   By: Serfects                   {Fore.LIGHTWHITE_EX}::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::${Style.RESET_ALL}"""
