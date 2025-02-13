@@ -1,20 +1,26 @@
-import os
-import sys
 from colorama import init, Fore, Style
-from disp_utils import center_text, create_border, ASCII_ART, BreadcrumbManager, display_breadcrumb
+from disp_utils import (
+    center_text, ASCII_ART, HistoryBar, 
+    display_history, clear_screen, graceful_exit, display_error
+)
 from general_utils import get_input, confirm_action, MenuExecutionError
 
+# Initialize colorama
 init()
 
+# ========== Menu Display Functions ==========
 def main_menu():
-    os.system('clear' if os.name == 'posix' else 'cls')
+    """Display the main menu interface and get user selection"""
+    # Clear screen and show ASCII art
+    clear_screen()
     centered_ascii_art = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
     print(centered_ascii_art)
     
-    # Display breadcrumb navigation
+    # Display history navigation
     print()  # Add a blank line for spacing
-    display_breadcrumb()
+    display_history()
     
+    # Define menu options
     menu_options = [
         ("1", "Feature 1", "First feature placeholder"),
         ("2", "Feature 2", "Second feature placeholder"),
@@ -26,32 +32,32 @@ def main_menu():
         choices=menu_options
     )
 
+# ========== Menu Action Functions ==========
 def run_menu_function(func):
+    """Execute menu function with error handling"""
     try:
         func()
     except Exception as e:
         raise MenuExecutionError(f"Error in menu execution: {str(e)}")
 
-def graceful_exit(message="", exit_code=0):
-    if message:
-        print(center_text(f"\n{Fore.YELLOW}{message}{Style.RESET_ALL}"))
-    print(center_text(f"\n{Fore.YELLOW}Thank you for using WireGuard Management{Style.RESET_ALL}"))
-    print(create_border())
-    sys.exit(exit_code)
-
+# ========== Feature Implementations ==========
 def test_feature_1():
-    BreadcrumbManager().push("Feature 1")
+    """Placeholder implementation for Feature 1"""
+    HistoryBar().push("Feature 1")
     print("\nFeature 1 placeholder")
     input("\nPress Enter to continue...")
-    BreadcrumbManager().pop()
+    HistoryBar().pop()
 
 def test_feature_2():
-    BreadcrumbManager().push("Feature 2")
+    """Placeholder implementation for Feature 2"""
+    HistoryBar().push("Feature 2")
     print("\nFeature 2 placeholder")
     input("\nPress Enter to continue...")
-    BreadcrumbManager().pop()
+    HistoryBar().pop()
 
+# ========== Main Application Loop ==========
 def main():
+    """Main application entry point and loop"""
     try:
         menu_actions = {
             "1": test_feature_1,
@@ -69,18 +75,19 @@ def main():
                     run_menu_function(menu_actions[choice])
                     
             except MenuExecutionError as e:
-                print(f"\n{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}{str(e)}{Style.RESET_ALL}")
+                display_error(str(e))
                 if not confirm_action("Would you like to return to the main menu?"):
                     graceful_exit("Exiting due to error", 1)
                     
             except KeyboardInterrupt:
                 if confirm_action("\nDo you want to exit?"):
                     graceful_exit("Received interrupt signal, shutting down...", 0)
-                print(f"\n{Fore.YELLOW}Returning to main menu...{Style.RESET_ALL}")
+                display_error("Returning to main menu...")
 
     except Exception as e:
-        print(f"\n{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}Fatal error: {str(e)}{Style.RESET_ALL}")
+        display_error(f"Fatal error: {str(e)}")
         graceful_exit("Application terminated due to fatal error", 1)
 
+# ========== Application Entry Point ==========
 if __name__ == "__main__":
     main()

@@ -1,3 +1,4 @@
+# Example 1: Single Horizontal Line (─) with History Bar
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::        ____       ____  ______        ____  __       ____        ::
 ::        \ \ \     |  _ \|  _ \ \      / /  \/  |     / / /        ::
@@ -8,15 +9,5 @@
 ::               Pterodactyl-Pelican-Wireguard-Manager              ::
 ::                           By: Serfects                           ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-                            Main Menu
+                            Main Menu                               
 ──────────────────────────────────────────────────────────────────────
-
-Available options:
-  • (1) Feature 1
-      First feature placeholder
-  • (2) Feature 2
-      Second feature placeholder
-  • (x) Exit
-      Exit the application
-
-Your Entry: ▸ _
