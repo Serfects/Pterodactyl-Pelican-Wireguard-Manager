@@ -65,19 +65,3 @@ def confirm_action(prompt):
     except KeyboardInterrupt:
         print(f"\n{Fore.YELLOW}Operation cancelled by user{Style.RESET_ALL}")
         return False
-
-def show_progress(message, duration):
-    if duration < 0:
-        raise ValueError("Duration must be non-negative")
-
-    try:
-        print(f"\n{Fore.LIGHTMAGENTA_EX}{message}...{Style.RESET_ALL}")
-        # Always show 12 dots with 0.1s delay each
-        for _ in range(12):
-            sys.stdout.write(f"{Fore.LIGHTCYAN_EX}·{Style.RESET_ALL}")
-            sys.stdout.flush()
-            time.sleep(0.1)
-        print(f"\n{Fore.LIGHTGREEN_EX}✓ {Fore.GREEN}Complete!{Style.RESET_ALL}")
-    except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}Progress interrupted{Style.RESET_ALL}")
-        raise

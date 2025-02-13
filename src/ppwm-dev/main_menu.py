@@ -1,30 +1,19 @@
 import os
 import sys
 from colorama import init, Fore, Style
-from disp_utils import center_text, create_border
-from general_utils import get_input, confirm_action, show_progress, MenuExecutionError
+from disp_utils import center_text, create_border, ASCII_ART, BreadcrumbManager, display_breadcrumb
+from general_utils import get_input, confirm_action, MenuExecutionError
 
 init()
-
-ASCII_ART = f"""{Fore.LIGHTWHITE_EX}::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::{Fore.LIGHTCYAN_EX}____       ____  ______        ____  __       ____{Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}\ \ \     |  _ \|  _ \ \      / /  \/  |     / / /{Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX} \ \ \    | |_) | |_) \ \ /\ / /| |\/| |    / / / {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX} / / /    |  __/|  __/ \ V  V / | |  | |    \ \ \ {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}/_/_/     |_|   |_|     \_/\_/  |_|  |_|     \_\_\{Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                                                  {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}       Pterodactyl-Pelican-Wireguard-Manager      {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                   By: Serfects                   {Fore.LIGHTWHITE_EX}::
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::${Style.RESET_ALL}"""
 
 def main_menu():
     os.system('clear' if os.name == 'posix' else 'cls')
     centered_ascii_art = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
     print(centered_ascii_art)
     
-    print("\n" + create_border())
-    print(center_text(f"{Fore.YELLOW}Main Menu{Style.RESET_ALL}"))
-    print(create_border() + "\n")
+    # Display breadcrumb navigation
+    print()  # Add a blank line for spacing
+    display_breadcrumb()
     
     menu_options = [
         ("1", "Feature 1", "First feature placeholder"),
@@ -37,7 +26,7 @@ def main_menu():
         choices=menu_options
     )
 
-def run_menu_function(func, loading_message):
+def run_menu_function(func):
     try:
         func()
     except Exception as e:
@@ -51,18 +40,22 @@ def graceful_exit(message="", exit_code=0):
     sys.exit(exit_code)
 
 def test_feature_1():
+    BreadcrumbManager().push("Feature 1")
     print("\nFeature 1 placeholder")
     input("\nPress Enter to continue...")
+    BreadcrumbManager().pop()
 
 def test_feature_2():
+    BreadcrumbManager().push("Feature 2")
     print("\nFeature 2 placeholder")
     input("\nPress Enter to continue...")
+    BreadcrumbManager().pop()
 
 def main():
     try:
         menu_actions = {
-            "1": (test_feature_1, "Loading feature 1"),
-            "2": (test_feature_2, "Loading feature 2")
+            "1": test_feature_1,
+            "2": test_feature_2
         }
 
         while True:
@@ -73,8 +66,7 @@ def main():
                         break
                 
                 if choice in menu_actions:
-                    func, message = menu_actions[choice]
-                    run_menu_function(func, message)
+                    run_menu_function(menu_actions[choice])
                     
             except MenuExecutionError as e:
                 print(f"\n{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}{str(e)}{Style.RESET_ALL}")
