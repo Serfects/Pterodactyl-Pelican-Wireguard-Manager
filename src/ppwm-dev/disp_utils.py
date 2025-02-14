@@ -38,15 +38,29 @@ def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
 
 def center_text(text, width=None, fill_char=" "):
-    """Center the given text in available space, accounting for ANSI formatting"""
+    """Center the given text in available space, accounting for ANSI formatting and truncation"""
     if not fill_char:
         raise ValueError("Fill character cannot be empty")
     actual_width = width if width is not None else SCREEN_WIDTH
     if actual_width < 0:
         raise ValueError("Width cannot be negative")
+        
     stripped_text = strip_ansi(text)
+    
+    # Handle text that's too long by truncating
     if len(stripped_text) > actual_width:
-        raise DisplayError(f"Text length ({len(stripped_text)}) exceeds width ({actual_width})")
+        # Calculate how much text we can keep plus ellipsis
+        keep_length = actual_width - 3  # Space for "..."
+        
+        # Find the ANSI formatting prefix and suffix
+        prefix, content, suffix = split_formatting(text)
+        
+        # Create truncated text with original formatting
+        truncated_text = prefix + content[:keep_length] + "..." + suffix
+        stripped_text = strip_ansi(truncated_text)
+        text = truncated_text
+        
+    # Center the text (truncated or original)
     padding = (actual_width - len(stripped_text)) // 2
     return (fill_char * padding) + text + (fill_char * (actual_width - len(stripped_text) - padding))
 
@@ -98,12 +112,39 @@ class HistoryBar:
     ARROW = f"{Fore.LIGHTBLUE_EX}▸{Style.RESET_ALL}"
     
     def __new__(cls):
-        """Singleton pattern to ensure single history instance"""
         if cls._instance is None:
             cls._instance = super(HistoryBar, cls).__new__(cls)
             cls._instance.path = ["Main Menu"]
         return cls._instance
-    
+
+    def push(self, menu_name):
+        """Add a menu to the navigation history
+        
+        If menu_name exceeds MAX_WIDTH, it will be truncated with ellipsis
+        """
+        if not menu_name or not menu_name.strip():
+            raise DisplayError("Menu name cannot be empty or whitespace")
+            
+        # Truncate long menu names before storing
+        menu_name = menu_name.strip()
+        if len(strip_ansi(menu_name)) > self.MAX_WIDTH:
+            truncated_length = self.MAX_WIDTH - 3  # Leave room for ...
+            menu_name = menu_name[:truncated_length] + "..."
+            
+        self.path.append(menu_name)
+        return self
+
+    def pop(self):
+        """Remove the last menu from navigation history"""
+        if len(self.path) <= 1:
+            return None  # Don't pop "Main Menu"
+        return self.path.pop()
+
+    def clear(self):
+        """Reset navigation history to initial state"""
+        self.path = ["Main Menu"]
+        return self
+
     def _format_menu_name(self, name, is_current=False):
         """Format menu names with appropriate colors"""
         if is_current:
@@ -119,23 +160,28 @@ class HistoryBar:
         if not self.path:
             return ""
             
+        # Calculate space needed for formatting
+        arrow_space = self._calculate_display_length(self.ARROW + " ")
+        ellipsis_space = self._calculate_display_length(self.ELLIPSIS + " ")
+        
         # Handle current menu
         current_menu = self._format_menu_name(self.path[-1], True)
         current_length = self._calculate_display_length(current_menu)
         
-        # Truncate if current menu is too long
+        # For truncation, account for ellipsis and one arrow
         if current_length > self.MAX_WIDTH:
-            truncated = self._format_menu_name(f"{self.path[-1][:self.MAX_WIDTH-3]}...", True)
-            return truncated
+            available_space = self.MAX_WIDTH - (ellipsis_space + arrow_space)
+            truncated = self._format_menu_name(
+                f"{self.path[-1][:available_space]}...",
+                True
+            )
+            return f"{self.ELLIPSIS} {self.ARROW} {truncated}"
             
-        # Initialize history building
+        # Rest of history bar building for normal cases
         formatted_menus = [current_menu]
         total_length = current_length
         available_space = self.MAX_WIDTH - current_length
         previous_menus = []
-        
-        # Calculate ellipsis space
-        ellipsis_space = self._calculate_display_length(f"{self.ELLIPSIS} {self.ARROW} ")
         
         # Process previous menus right to left
         for menu in reversed(self.path[:-1]):
@@ -143,11 +189,6 @@ class HistoryBar:
             menu_text = f"{formatted_menu} {self.ARROW} "
             menu_length = self._calculate_display_length(menu_text)
             
-            # Check space including potential ellipsis
-            space_needed = menu_length
-            if len(previous_menus) < len(self.path) - 2:
-                space_needed += ellipsis_space
-                
             if available_space >= menu_length:
                 previous_menus.insert(0, (formatted_menu, menu_length))
                 available_space -= menu_length
@@ -158,17 +199,16 @@ class HistoryBar:
         # Build final display
         result_parts = []
         
-        # Add ellipsis if needed
-        if previous_menus and len(previous_menus) < len(self.path) - 1:
+        # Add ellipsis if needed and there are hidden menus
+        if len(previous_menus) < len(self.path) - 1:
             ellipsis = self._format_menu_name(self.ELLIPSIS)
-            if available_space >= self._calculate_display_length(f"{ellipsis} {self.ARROW} "):
-                result_parts.extend([ellipsis, self.ARROW])
+            result_parts.extend([ellipsis, self.ARROW])
         
         # Add fitting previous menus
-        for menu, _ in previous_menus:
-            if result_parts:
-                result_parts.append(self.ARROW)
+        for i, (menu, _) in enumerate(previous_menus):
             result_parts.append(menu)
+            if i < len(previous_menus) - 1:
+                result_parts.append(self.ARROW)
         
         # Add current menu
         if result_parts:

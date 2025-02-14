@@ -1,5 +1,30 @@
 ===============================================================================================================
+# Commit Log Template
+
 ## Date/Time: YYYY-MM-DD
+## Commit Name: Saving progress, test script working
+
+### Changes Made
+1. History Bar
+   - Add push/pop methods to the HistoryBar class for managing navigation history. This is supposed to fix a fatal error.
+   - Added a error handling feature to properly handle names of menus that are over the 70 character limit
+   - Fixed double arrows for truncated ellipsis
+
+2. Test Script
+   - Created Test Script
+   - Added colorama import to test script since that was causing a fatal error
+   - Added menu bar test to check all features of menu bar
+   - Changed input method to the one we use in the actual script insted of the python one so the ctrl+c handling works properly
+
+3. general_utils.py
+   - Added a signal handler to general_utils.py for ctrl+c to exit the program gracefully
+
+Still need to add logging
+fix history bar arrows and long message
+
+
+===============================================================================================================
+## Date/Time: Thu Feb 13 23:31:51 2025 +0000
 ## Commit Name: Formatting changes, reorginizational changes
 
 ### Changes Made
@@ -105,5 +130,3 @@
 
 2. Example 2
    - Details
-
-===============================================================================================================

@@ -1,4 +1,4 @@
-from colorama import init, Fore, Style
+from colorama import init
 from disp_utils import (
     center_text, ASCII_ART, HistoryBar, 
     display_history, clear_screen, graceful_exit, display_error
@@ -14,10 +14,9 @@ def main_menu():
     # Clear screen and show ASCII art
     clear_screen()
     centered_ascii_art = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
-    print(centered_ascii_art)
+    print(centered_ascii_art + "\n")  # Added newline back
     
     # Display history navigation
-    print()  # Add a blank line for spacing
     display_history()
     
     # Define menu options
@@ -65,24 +64,18 @@ def main():
         }
 
         while True:
-            try:
-                choice = main_menu()
-                if choice.lower() == "x":
-                    if confirm_action("Are you sure you want to exit?"):
-                        break
+            choice = main_menu()  # Will handle Ctrl+C through get_input
+            if choice.lower() == "x":
+                if confirm_action("Are you sure you want to exit?"):
+                    break
+            
+            if choice in menu_actions:
+                run_menu_function(menu_actions[choice])
                 
-                if choice in menu_actions:
-                    run_menu_function(menu_actions[choice])
-                    
-            except MenuExecutionError as e:
-                display_error(str(e))
-                if not confirm_action("Would you like to return to the main menu?"):
-                    graceful_exit("Exiting due to error", 1)
-                    
-            except KeyboardInterrupt:
-                if confirm_action("\nDo you want to exit?"):
-                    graceful_exit("Received interrupt signal, shutting down...", 0)
-                display_error("Returning to main menu...")
+    except MenuExecutionError as e:
+        display_error(str(e))
+        if not confirm_action("Would you like to return to the main menu?"):
+            graceful_exit("Exiting due to error", 1)
 
     except Exception as e:
         display_error(f"Fatal error: {str(e)}")
