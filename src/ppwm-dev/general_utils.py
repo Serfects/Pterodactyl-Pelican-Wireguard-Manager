@@ -19,7 +19,7 @@ def handle_interrupt():
 def get_input(prompt, default=None, validator=None, choices=None, required=False):
     """Get user input with optional validation and choice selection"""
     try:
-        print(f"\n{Fore.YELLOW}{prompt}{Style.RESET_ALL}")
+        print(f"\n{Fore.LIGHTYELLOW_EX}{prompt}{Style.RESET_ALL}")
         
         # Display available choices if provided
         if choices:
@@ -29,47 +29,47 @@ def get_input(prompt, default=None, validator=None, choices=None, required=False
                     if len(choice) == 3:
                         # Display choice with explanation
                         number, description, explanation = choice
-                        print(f"  {Style.DIM}{Fore.WHITE}•{Style.RESET_ALL} {Fore.LIGHTCYAN_EX}({number}){Style.RESET_ALL} {Fore.WHITE}{description}")
+                        print(f"  {Style.DIM}{Fore.LIGHTWHITE_EX}•{Style.RESET_ALL} {Fore.LIGHTCYAN_EX}({number}){Style.RESET_ALL} {Fore.LIGHTWHITE_EX}{description}")
                         print(f"      {Style.DIM}{explanation}{Style.RESET_ALL}")
                     else:
                         # Display choice without explanation
                         number, description = choice
-                        print(f"  {Style.DIM}{Fore.WHITE}•{Style.RESET_ALL} {Fore.LIGHTCYAN_EX}({number}){Style.RESET_ALL} {Fore.WHITE}{description}")
+                        print(f"  {Style.DIM}{Fore.LIGHTWHITE_EX}•{Style.RESET_ALL} {Fore.LIGHTCYAN_EX}({number}){Style.RESET_ALL} {Fore.LIGHTWHITE_EX}{description}")
                 else:
                     # Display simple choice
-                    print(f"  {Style.DIM}{Fore.WHITE}•{Style.RESET_ALL} {Fore.WHITE}{choice}")
+                    print(f"  {Style.DIM}{Fore.LIGHTWHITE_EX}•{Style.RESET_ALL} {Fore.LIGHTWHITE_EX}{choice}")
             print()
 
         # Show default value if provided
         if default is not None:
-            print(f"{Fore.WHITE}(Default: {Fore.LIGHTBLUE_EX}{default}{Fore.WHITE}){Style.RESET_ALL}")
+            print(f"{Fore.LIGHTWHITE_EX}(Default: {Fore.LIGHTBLUE_EX}{default}{Fore.LIGHTWHITE_EX}){Style.RESET_ALL}")
         
         # Prepare input prompt
-        prompt_text = f"{Fore.WHITE}Your Entry: {Fore.LIGHTCYAN_EX}▸ {Style.RESET_ALL}"
+        prompt_text = f"{Fore.LIGHTWHITE_EX}Your Entry: {Fore.LIGHTCYAN_EX}▸ {Style.RESET_ALL}"
 
         # Input loop
         while True:
             # Get and display user input
             user_input = input(prompt_text).strip()
-            print(f"\033[F\033[K{prompt_text}{Style.BRIGHT}{Fore.WHITE}{user_input}{Style.RESET_ALL}")
+            print(f"\033[F\033[K{prompt_text}{Style.BRIGHT}{Fore.LIGHTWHITE_EX}{user_input}{Style.RESET_ALL}")
 
             # Handle empty input
             if not user_input:
                 if default is not None:
-                    print(f"{Fore.LIGHTGREEN_EX}✓ {Fore.LIGHTBLUE_EX}Default option {Style.BRIGHT}{Fore.WHITE}{default}{Style.RESET_ALL} {Fore.LIGHTBLUE_EX}used{Style.RESET_ALL}")
+                    print(f"{Fore.LIGHTGREEN_EX}✓ {Fore.LIGHTBLUE_EX}Default option {Style.BRIGHT}{Fore.LIGHTWHITE_EX}{default}{Style.RESET_ALL} {Fore.LIGHTBLUE_EX}used{Style.RESET_ALL}")
                     return default
                 if required:
-                    print(f"{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}This field is required.{Style.RESET_ALL}")
+                    print(f"{Fore.LIGHTYELLOW_EX}⚠ {Fore.LIGHTRED_EX}This field is required.{Style.RESET_ALL}")
                     continue
 
             # Validate against choices
             if choices and user_input not in [c[0] if isinstance(c, tuple) else c for c in choices]:
-                print(f"{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}Invalid choice. Please select one of the options above.{Style.RESET_ALL}")
+                print(f"{Fore.LIGHTYELLOW_EX}⚠ {Fore.LIGHTRED_EX}Invalid choice. Please select one of the options above.{Style.RESET_ALL}")
                 continue
 
             # Run custom validation
             if validator and not validator(user_input):
-                print(f"{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}Invalid input. Please try again.{Style.RESET_ALL}")
+                print(f"{Fore.LIGHTYELLOW_EX}⚠ {Fore.LIGHTRED_EX}Invalid input. Please try again.{Style.RESET_ALL}")
                 continue
 
             return user_input
@@ -89,5 +89,5 @@ def confirm_action(prompt):
         )
         return response.lower() in ['yes', 'y']
     except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}Operation cancelled by user{Style.RESET_ALL}")
+        print(f"\n{Fore.LIGHTYELLOW_EX}Operation cancelled by user{Style.RESET_ALL}")
         return False

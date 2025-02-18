@@ -1,11 +1,11 @@
+# ========== Imports ==========
 import re
 from colorama import Style, Fore
 import time, sys
 import os
 
-# ========== Constants ==========
+# ========== General Constants ==========
 SCREEN_WIDTH = 70
-HISTORYBAR_BORDER_CHAR = "─"
 ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
 # ========== Custom Exceptions ==========
@@ -44,7 +44,6 @@ def center_text(text, width=None, fill_char=" "):
     actual_width = width if width is not None else SCREEN_WIDTH
     if actual_width < 0:
         raise ValueError("Width cannot be negative")
-        
     stripped_text = strip_ansi(text)
     
     # Handle text that's too long by truncating
@@ -98,139 +97,80 @@ def show_progress(message, duration):
             sys.stdout.write(f"{Fore.LIGHTCYAN_EX}·{Style.RESET_ALL}")
             sys.stdout.flush()
             time.sleep(0.1)
-        print(f"\n{Fore.LIGHTGREEN_EX}✓ {Fore.GREEN}Complete!{Style.RESET_ALL}")
+        print(f"\n{Fore.LIGHTGREEN_EX}✓ {Fore.LIGHTGREEN_EX}Complete!{Style.RESET_ALL}")
     except KeyboardInterrupt:
         print(f"\n{Fore.YELLOW}Progress interrupted{Style.RESET_ALL}")
         raise
 
-# ========== History Bar Implementation ==========
+# ========== History Bar Section ==========
+# History Bar-specific constant
+HISTORYBAR_BORDER_CHAR = "─"
+
 class HistoryBar:
-    """Manages the navigation history display with truncation and formatting"""
+    """Manages the one-line navigation history display within a 70-character limit.
+    Displays only the current menu name centered. If the menu name exceeds a visible
+    length of 66 characters, it is truncated to 64 characters plus a space and
+    a dim white '⋯' marker.
+    """
     _instance = None
     MAX_WIDTH = 70
-    ELLIPSIS = "⋯"
-    ARROW = f"{Fore.LIGHTBLUE_EX}▸{Style.RESET_ALL}"
-    
+    TRUNCATION_THRESHOLD = 66  # Maximum visible length for menu name before truncation
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(HistoryBar, cls).__new__(cls)
-            cls._instance.path = ["Main Menu"]
+            cls._instance.stack = ["Main Menu"]
         return cls._instance
 
     def push(self, menu_name):
-        """Add a menu to the navigation history
-        
-        If menu_name exceeds MAX_WIDTH, it will be truncated with ellipsis
-        """
+        """Push a new menu name onto the history stack."""
         if not menu_name or not menu_name.strip():
             raise DisplayError("Menu name cannot be empty or whitespace")
-            
-        # Truncate long menu names before storing
-        menu_name = menu_name.strip()
-        if len(strip_ansi(menu_name)) > self.MAX_WIDTH:
-            truncated_length = self.MAX_WIDTH - 3  # Leave room for ...
-            menu_name = menu_name[:truncated_length] + "..."
-            
-        self.path.append(menu_name)
-        return self
+        self.stack.append(menu_name.strip())
 
     def pop(self):
-        """Remove the last menu from navigation history"""
-        if len(self.path) <= 1:
-            return None  # Don't pop "Main Menu"
-        return self.path.pop()
+        """Pop the current menu name off the history stack (if not the base menu)."""
+        if len(self.stack) > 1:
+            return self.stack.pop()
+        return None
 
     def clear(self):
-        """Reset navigation history to initial state"""
-        self.path = ["Main Menu"]
-        return self
+        """Reset the history bar to only contain the base menu."""
+        self.stack = ["Main Menu"]
 
-    def _format_menu_name(self, name, is_current=False):
-        """Format menu names with appropriate colors"""
-        if is_current:
-            return f"{Fore.LIGHTCYAN_EX}{name}{Style.RESET_ALL}"
-        return f"{Style.DIM}{Fore.WHITE}{name}{Style.RESET_ALL}"
-    
-    def _calculate_display_length(self, text):
-        """Calculate true display length ignoring ANSI codes"""
-        return len(strip_ansi(text))
-    
     def get_history(self):
-        """Generate formatted history bar with proper truncation"""
-        if not self.path:
-            return ""
-            
-        # Calculate space needed for formatting
-        arrow_space = self._calculate_display_length(self.ARROW + " ")
-        ellipsis_space = self._calculate_display_length(self.ELLIPSIS + " ")
-        
-        # Handle current menu
-        current_menu = self._format_menu_name(self.path[-1], True)
-        current_length = self._calculate_display_length(current_menu)
-        
-        # For truncation, account for ellipsis and one arrow
-        if current_length > self.MAX_WIDTH:
-            available_space = self.MAX_WIDTH - (ellipsis_space + arrow_space)
-            truncated = self._format_menu_name(
-                f"{self.path[-1][:available_space]}...",
-                True
-            )
-            return f"{self.ELLIPSIS} {self.ARROW} {truncated}"
-            
-        # Rest of history bar building for normal cases
-        formatted_menus = [current_menu]
-        total_length = current_length
-        available_space = self.MAX_WIDTH - current_length
-        previous_menus = []
-        
-        # Process previous menus right to left
-        for menu in reversed(self.path[:-1]):
-            formatted_menu = self._format_menu_name(menu)
-            menu_text = f"{formatted_menu} {self.ARROW} "
-            menu_length = self._calculate_display_length(menu_text)
-            
-            if available_space >= menu_length:
-                previous_menus.insert(0, (formatted_menu, menu_length))
-                available_space -= menu_length
-                total_length += menu_length
-            else:
-                break
-        
-        # Build final display
-        result_parts = []
-        
-        # Add ellipsis if needed and there are hidden menus
-        if len(previous_menus) < len(self.path) - 1:
-            ellipsis = self._format_menu_name(self.ELLIPSIS)
-            result_parts.extend([ellipsis, self.ARROW])
-        
-        # Add fitting previous menus
-        for i, (menu, _) in enumerate(previous_menus):
-            result_parts.append(menu)
-            if i < len(previous_menus) - 1:
-                result_parts.append(self.ARROW)
-        
-        # Add current menu
-        if result_parts:
-            result_parts.append(self.ARROW)
-        result_parts.append(current_menu)
-        
-        return " ".join(result_parts)
+        """
+        Return the current menu name formatted for the history bar.
+        Applies light cyan color to the menu name. If its visible length (ignoring ANSI codes)
+        exceeds 66 characters, it will be truncated to 64 characters followed by a space and a
+        dim white '⋯'. The resulting text is meant to fit within a 70-character limit.
+        """
+        current = self.stack[-1]
+        visible_len = len(current)
+        if visible_len > self.TRUNCATION_THRESHOLD:
+            formatted = f"{Style.BRIGHT}{Fore.LIGHTCYAN_EX}{current[:64]}{Style.RESET_ALL}" + " " + f"{Style.DIM}{Fore.WHITE}⋯{Style.RESET_ALL}"
+        else:
+            formatted = f"{Style.BRIGHT}{Fore.LIGHTCYAN_EX}{current}{Style.RESET_ALL}"
+        return formatted
 
 def display_history():
-    """Display the history bar with proper centering and border"""
+    """
+    Display the current menu name centered in a 70-character wide field.
+    It appears one line below the bottom border of the ASCII art.
+    A bottom border consisting of the ─ character is printed below.
+    """
     history = HistoryBar().get_history()
-    print(center_text(history))
-    print(f"{Fore.LIGHTWHITE_EX}{create_border(HISTORYBAR_BORDER_CHAR)}{Style.RESET_ALL}")
+    print(center_text(history, width=70))
+    print(f"{Fore.LIGHTWHITE_EX}{create_border(HISTORYBAR_BORDER_CHAR, width=70)}{Style.RESET_ALL}")
 
 # ========== ASCII Art ==========
 ASCII_ART = f"""{Fore.LIGHTWHITE_EX}::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::{Fore.LIGHTCYAN_EX}        ____      {Style.BRIGHT}{Fore.WHITE} ____  ______        ____  __ {Fore.LIGHTCYAN_EX}      ____        {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}        \ \ \     {Style.BRIGHT}{Fore.WHITE}|  _ \|  _ \ \      / /  \/  |{Fore.LIGHTCYAN_EX}     / / /        {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}         \ \ \    {Style.BRIGHT}{Fore.WHITE}| |_) | |_) \ \ /\ / /| |\/| |{Fore.LIGHTCYAN_EX}    / / /         {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}         / / /    {Style.BRIGHT}{Fore.WHITE}|  __/|  __/ \ V  V / | |  | |{Fore.LIGHTCYAN_EX}    \ \ \         {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}        /_/_/     {Style.BRIGHT}{Fore.WHITE}|_|   |_|     \_/\_/  |_|  |_|{Fore.LIGHTCYAN_EX}     \_\_\        {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                                                                  {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}               Pterodactyl-Pelican-Wireguard-Manager              {Fore.LIGHTWHITE_EX}::
-::{Fore.LIGHTCYAN_EX}                           By: Serfects                           {Fore.LIGHTWHITE_EX}::
+::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}        ____      {Style.BRIGHT}{Fore.WHITE} ____  ______        ____  __ {Fore.LIGHTCYAN_EX}      ____        {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
+::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}        \ \ \     {Style.BRIGHT}{Fore.WHITE}|  _ \|  _ \ \      / /  \/  |{Fore.LIGHTCYAN_EX}     / / /        {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
+::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}         \ \ \    {Style.BRIGHT}{Fore.WHITE}| |_) | |_) \ \ /\ / /| |\/| |{Fore.LIGHTCYAN_EX}    / / /         {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
+::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}         / / /    {Style.BRIGHT}{Fore.WHITE}|  __/|  __/ \ V  V / | |  | |{Fore.LIGHTCYAN_EX}    \ \ \         {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
+::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}        /_/_/     {Style.BRIGHT}{Fore.WHITE}|_|   |_|     \_/\_/  |_|  |_|{Fore.LIGHTCYAN_EX}     \_\_\        {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
+::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}                                                                  {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}               Pterodactyl-Pelican-Wireguard-Manager              {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
+::{Fore.LIGHTCYAN_EX}                           By: Serfects                           {Style.NORMAL}{Fore.LIGHTWHITE_EX}::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::{Style.RESET_ALL}"""

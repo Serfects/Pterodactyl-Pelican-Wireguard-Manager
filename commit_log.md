@@ -1,7 +1,29 @@
 ===============================================================================================================
-# Commit Log Template
-
 ## Date/Time: YYYY-MM-DD
+## Commit Name: Appearance changes finalization
+
+### Changes Made
+1. disp_utils.py
+   - Reorganized again to make sure things are under the right sections
+   - Removed all unused code from previous history bar implementation
+   - Updated color of show_progress success message to be bright green
+
+2. History Bar
+   - Completely rewrote the history bar to only show one single menu name at a time and simplified the logic and overall functionality of this feature
+   - Made the history bar text bold and bright white to make it stand out more
+
+3. functest.py
+   - Updated the test script to properly reflect the changes made to the history bar
+   - Added a new ASCII art test showing different levels of boldness
+
+4. ASCII Art
+   - Updated the ASCII art to correct some boldness issues and make it look better
+
+5. general_utils.py
+   - Updated all colors of get_input to be brighter but not bold, just generally makes things look better
+
+===============================================================================================================
+## Date/Time: Fri Feb 14 02:20:55 2025 +0000
 ## Commit Name: Saving progress, test script working
 
 ### Changes Made
@@ -119,8 +141,6 @@ fix history bar arrows and long message
 - Created helper scripts for the test environment
 
 ===============================================================================================================
-# Commit Log Template
-
 ## Date/Time: YYYY-MM-DD
 ## Commit Name: [commit name goes here]
 
