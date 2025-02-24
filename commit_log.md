@@ -1,5 +1,16 @@
 ===============================================================================================================
 ## Date/Time: YYYY-MM-DD
+## Commit Name: [commit name goes here]
+
+### Changes Made
+1. Example 1
+   - Details
+
+2. Example 2
+   - Details
+
+===============================================================================================================
+## Date/Time: Tue Feb 18 09:05:06 2025 +0000
 ## Commit Name: Appearance changes finalization
 
 ### Changes Made
