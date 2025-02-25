@@ -1,393 +1,412 @@
+#!/usr/bin/env python3
+"""
+PPWM Test Script (functest.py)
+
+This script is used to test various components and features of the 
+Pterodactyl-Pelican-Wireguard-Manager application in isolation.
+It provides a menu-driven interface to test specific functionality
+without affecting the actual system configuration.
+
+The script mimics the look and feel of the real application to provide
+an authentic testing experience, while focusing purely on functionality tests.
+"""
+
 import os
 import sys
+import time
+import signal
 import logging
-from pathlib import Path
-from colorama import init, Fore, Style
+from datetime import datetime
 
-# Initialize colorama
-init()
+# Set Python path to include the parent directory
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/ppwm-dev')))
 
-# Add the src directory to Python path for imports
-src_path = Path(__file__).parent.parent / "src" / "ppwm-dev"
-sys.path.append(str(src_path))
+# Import application modules
+try:
+    from base_utils import AppError, setup_logging, check_root, SCREEN_WIDTH
+    from display_utils import (ASCII_ART, clear_screen, center_text, create_border, 
+                              show_error, format_error_message, format_success, 
+                              show_progress, graceful_exit, NAV_BORDER_CHAR)
+    from navigation import MenuNavigationTracker
+    from input_utils import get_input, confirm_action
+except ImportError as e:
+    print(f"Error importing module: {e}")
+    print("Please make sure you're running the script from the correct directory")
+    print("and that all required modules are present.")
+    sys.exit(1)
 
-from disp_utils import (
-    center_text, ASCII_ART, HistoryBar,
-    display_history, clear_screen, display_error,
-    show_progress, format_error, format_success
-)
-from general_utils import (
-    get_input, confirm_action, MenuExecutionError,
-    check_root, setup_logging, add_navigation_options, process_menu_choice
-)
-from main_menu import graceful_exit
+# Set up logging for test script
+logger = setup_logging()
+logger.info("Test script started")
 
-# Initialize logger for test script
-logger = logging.getLogger(__name__)
+# Initialize the menu navigation tracker
+menu_tracker = MenuNavigationTracker()
 
-def test_utils_features():
-    """Test various input and validation features"""
-    HistoryBar().push("Utils Testing")
-    
-    test_results = []
-    
-    # Test basic input
-    name = get_input("Enter your name", required=True)
-    test_results.append(("Basic Required Input", bool(name)))
-    
-    # Test default value
-    port = get_input("Enter port number", default="51820")
-    test_results.append(("Default Value Input", port == "51820" if not port else True))
-    
-    # Test simple choices
-    color = get_input("Select a color", choices=["red", "blue", "green"])
-    test_results.append(("Simple Choices", color in ["red", "blue", "green"]))
-    
-    # Test tuple choices with descriptions
-    role = get_input("Select your role", choices=[
-        ("1", "Administrator", "Full system access"),
-        ("2", "User", "Limited access"),
-        ("3", "Guest", "View only access")
-    ])
-    test_results.append(("Complex Choices", role in ["1", "2", "3"]))
-    
-    # Test number validation
-    def number_validator(value):
-        try:
-            num = int(value)
-            return 1 <= num <= 100
-        except ValueError:
-            return False
-            
-    score = get_input(
-        "Enter a number between 1-100",
-        validator=number_validator
-    )
-    test_results.append(("Input Validation", bool(score)))
-    
-    # Display test results
-    print("\n=== Utils Testing Results ===")
-    for test_name, result in test_results:
-        status = "✓" if result else "✗"
-        color = Fore.LIGHTGREEN_EX if result else Fore.LIGHTRED_EX
-        print(f"{color}{status} {test_name}{Style.RESET_ALL}")
-    
-    input("\nPress Enter to continue...")
-    HistoryBar().pop()
+def handle_sigint(sig, frame):
+    """Handle CTRL+C gracefully"""
+    logger.info("SIGINT received, exiting gracefully")
+    graceful_exit("\nExiting test script...", 0)
 
-def test_display_features():
-    """Test various display and formatting features"""
-    HistoryBar().push("Display Testing")
-    
-    # Test screen clearing
+# Register signal handler
+signal.signal(signal.SIGINT, handle_sigint)
+
+# ========== Test Functions ==========
+
+def test_display_utilities():
+    """Test various display utility functions"""
     clear_screen()
-    print("Testing screen clear... (cleared above)")
+    menu_tracker.push("Display Utilities Test")
     
-    # Test ASCII art display
-    print("\nTesting ASCII art display:")
-    centered_ascii = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
-    print(centered_ascii)
+    print(ASCII_ART)
+    print(create_border(NAV_BORDER_CHAR))
+    print(menu_tracker.display())
+    print(create_border(NAV_BORDER_CHAR))
     
-    # Test history bar
-    print("\nTesting history bar display:")
-    display_history()
+    print("\n1. Testing text centering")
+    print("-------------------------")
+    print(center_text("This is centered text"))
+    print(center_text("This is centered colored " + "\033[92mGREEN\033[0m text"))
+    print(center_text("This is a really long text that should get truncated because it exceeds the screen width", SCREEN_WIDTH))
     
-    # Test progress indicator
-    if confirm_action("Would you like to test the progress indicator?"):
-        show_progress("Testing progress display", 1)
+    print("\n2. Testing borders")
+    print("----------------")
+    print(create_border("="))
+    print(create_border("-"))
+    print(create_border("~"))
     
-    # Test error display
-    print("\nTesting error display:")
-    display_error("This is a test error message")
+    print("\n3. Testing error formatting")
+    print("------------------------")
+    print(format_error_message("This is a test error message"))
+    print(format_success("This is a test success message"))
     
-    input("\nPress Enter to continue...")
-    HistoryBar().pop()
+    print("\n4. Testing progress indicator")
+    show_progress("Testing progress indicator", 2)
+    print(format_success("Progress completed successfully"))
+    
+    choice = get_input("\nPress 'B' to go back or 'X' to exit: ", ["B", "X"], case_insensitive=True)
+    if choice.upper() == "X":
+        graceful_exit("Exiting test script...", 0)
+    
+    menu_tracker.pop()
+    return main_menu()
 
-def test_menu_system():
-    """Test the menu system functionality"""
-    HistoryBar().push("Menu Testing")
-    
-    menu_options = [
-        ("1", "Option One", "First test option"),
-        ("2", "Option Two", "Second test option"),
-        ("3", "Return", "Go back to main menu")
-    ]
-    
-    while True:
-        choice = get_input("Test Menu", choices=menu_options)
-        if choice == "3":
-            break
-        elif choice in ["1", "2"]:
-            show_progress(f"Testing Option {choice}", 1)
-    
-    HistoryBar().pop()
-
-def test_history_bar():
-    """Test the updated history bar functionality (displays only the current menu)."""
-    # Reset history bar to initial state.
-    HistoryBar().clear()
+def test_navigation_tracker():
+    """Test the MenuNavigationTracker functionality"""
     clear_screen()
-    print("\n".join(center_text(line) for line in ASCII_ART.strip().split("\n")) + "\n")
-    display_history()
-    get_input("Press Enter to begin the updated history bar test...", choices=[""])
+    menu_tracker.push("Navigation Tracker Test")
     
-    # Push new menus and display updated history after each push.
-    new_menus = [
-        "Settings",
-        "Network Configuration",
-        "WireGuard Settings",
-        "Peer Management",
-        "Add New Peer",
-        "Advanced Options with a very long description that might be truncated if it exceeds sixty-six characters"
-    ]
+    print(ASCII_ART)
+    print(create_border(NAV_BORDER_CHAR))
+    print(menu_tracker.display())
+    print(create_border(NAV_BORDER_CHAR))
     
-    for menu in new_menus:
-        HistoryBar().push(menu)
-        clear_screen()
-        print("\n".join(center_text(line) for line in ASCII_ART.strip().split("\n")) + "\n")
-        display_history()
-        print(f"\nCurrent menu: {menu}")
-        get_input("Press Enter to continue...", choices=[""])
+    print("\n1. Testing menu navigation")
+    print("-----------------------")
+    print(f"Current menu: {menu_tracker.current_menu()}")
     
-    # Pop menus one by one and display the updated history bar.
-    while HistoryBar().pop() is not None:
-        clear_screen()
-        print("\n".join(center_text(line) for line in ASCII_ART.strip().split("\n")) + "\n")
-        display_history()
-        get_input("Press Enter to pop the current menu...", choices=[""])
-        
-    print(f"\n{Fore.LIGHTGREEN_EX}✓ History bar test complete!{Style.RESET_ALL}")
-    get_input("Press Enter to return to main menu...", choices=[""])
+    print("\n2. Testing menu history")
+    print("--------------------")
+    print("Let's navigate through a simulated menu hierarchy:")
+    
+    test_menus = ["Server Setup", "Network Configuration", "WireGuard Setup", "Advanced Settings"]
+    
+    for menu in test_menus:
+        print(f"\nPushing '{menu}' to navigation stack...")
+        menu_tracker.push(menu)
+        print("Current navigation display:")
+        print(create_border(NAV_BORDER_CHAR))
+        print(menu_tracker.display())
+        print(create_border(NAV_BORDER_CHAR))
+        time.sleep(1)
+    
+    print("\nNow let's go back through the menus:")
+    
+    while len(test_menus) > 0:
+        print("\nPopping from navigation stack...")
+        menu_tracker.pop()
+        test_menus.pop()
+        print("Current navigation display:")
+        print(create_border(NAV_BORDER_CHAR))
+        print(menu_tracker.display())
+        print(create_border(NAV_BORDER_CHAR))
+        time.sleep(1)
+    
+    choice = get_input("\nPress 'B' to go back or 'X' to exit: ", ["B", "X"], case_insensitive=True)
+    if choice.upper() == "X":
+        graceful_exit("Exiting test script...", 0)
+    
+    menu_tracker.pop()
+    return main_menu()
 
-def test_ascii_art_styles():
-    """Test different styles of ASCII art border characters"""
-    HistoryBar().push("ASCII Art Comparison")
+def test_input_utilities():
+    """Test input validation and handling functions"""
+    clear_screen()
+    menu_tracker.push("Input Utilities Test")
     
-    # Regular version (unbold border and specific text)
-    print("\nRegular Version (Unbold Border and Title Text):")
-    print("-" * 70)
-    unbold_art = (ASCII_ART
-        # Keep text in the art bold except for specific lines
-        .replace(
-            '::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}               Pterodactyl-Pelican-Wireguard-Manager',
-            '::{Style.NORMAL}{Fore.LIGHTCYAN_EX}               Pterodactyl-Pelican-Wireguard-Manager'
-        )
-        .replace(
-            '::{Style.BRIGHT}{Fore.LIGHTCYAN_EX}                           By: Serfects',
-            '::{Style.NORMAL}{Fore.LIGHTCYAN_EX}                           By: Serfects'
-        )
-    )
-    centered_unbold = "\n".join(center_text(line) for line in unbold_art.strip().split("\n"))
-    print(centered_unbold)
+    print(ASCII_ART)
+    print(create_border(NAV_BORDER_CHAR))
+    print(menu_tracker.display())
+    print(create_border(NAV_BORDER_CHAR))
     
-    # Create bold version (everything bold)
-    print("\nBold Version (Bold Border and Text):")
-    print("-" * 70)
-    bold_border_art = ASCII_ART.replace(
-        f"{Fore.LIGHTWHITE_EX}::", 
-        f"{Style.BRIGHT}{Fore.LIGHTWHITE_EX}::"
-    )
-    centered_bold = "\n".join(center_text(line) for line in bold_border_art.strip().split("\n"))
-    print(centered_bold)
+    print("\n1. Testing basic input with validation")
+    print("---------------------------------")
+    choice = get_input("Enter a number between 1 and 5: ", 
+                      valid_options=["1", "2", "3", "4", "5"],
+                      error_message="Invalid input. Please enter a number between 1 and 5.")
+    print(format_success(f"You entered: {choice}"))
     
-    input("\nPress Enter to continue...")
-    HistoryBar().pop()
-
-def test_logging_system():
-    """Test the logging system configuration and functionality"""
-    HistoryBar().push("Logging System Test")
+    print("\n2. Testing confirmed actions")
+    print("-------------------------")
+    confirmed = confirm_action("Do you want to simulate a dangerous action?")
+    if confirmed:
+        show_progress("Simulating action", 1.5)
+        print(format_success("Action completed successfully"))
+    else:
+        print(format_error_message("Action cancelled"))
     
-    test_results = []
+    print("\n3. Testing case-insensitive input")
+    print("-----------------------------")
+    choice = get_input("Enter 'YES' or 'NO' (case insensitive): ", 
+                      valid_options=["YES", "NO"],
+                      case_insensitive=True,
+                      error_message="Please enter either 'YES' or 'NO'.")
+    print(format_success(f"You entered: {choice}"))
     
-    try:
-        # Test log file creation
-        logger.info("Testing logging system")
-        test_results.append(("Log File Creation", True))
-        
-        # Test different log levels
-        logger.debug("Test debug message")
-        logger.info("Test info message")
-        logger.warning("Test warning message")
-        logger.error("Test error message")
-        test_results.append(("Log Levels", True))
-        
-        # Test error formatting
-        error_msg = "Test error formatting"
-        formatted_error = format_error(error_msg)
-        print(f"\nTesting error formatting:\n{formatted_error}")
-        test_results.append(("Error Formatting", True))
-        
-        # Test success formatting
-        success_msg = "Test success formatting"
-        formatted_success = format_success(success_msg)
-        print(f"\nTesting success formatting:\n{formatted_success}")
-        test_results.append(("Success Formatting", True))
-        
-    except Exception as e:
-        display_error(f"Logging test failed: {str(e)}")
-        test_results.append(("Logging System", False))
+    print("\n4. Testing input with default value")
+    print("-------------------------------")
+    choice = get_input("Enter your name (default: 'User'): ",
+                      default="User")
+    print(format_success(f"Hello, {choice}!"))
     
-    # Display test results
-    print("\n=== Logging System Test Results ===")
-    for test_name, result in test_results:
-        status = format_success("PASS") if result else format_error("FAIL")
-        print(f"{test_name}: {status}")
+    choice = get_input("\nPress 'B' to go back or 'X' to exit: ", ["B", "X"], case_insensitive=True)
+    if choice.upper() == "X":
+        graceful_exit("Exiting test script...", 0)
     
-    input("\nPress Enter to continue...")
-    HistoryBar().pop()
-
-def test_root_check():
-    """Test the root privilege checking functionality"""
-    HistoryBar().push("Root Check Test")
-    
-    print("\nTesting root privilege check...")
-    try:
-        current_euid = os.geteuid()
-        is_root = current_euid == 0
-        
-        print(f"\nCurrent effective UID: {current_euid}")
-        print(f"Running as root: {format_success('Yes') if is_root else format_error('No')}")
-        
-        if not is_root:
-            print("\nNote: Some features may be limited without root privileges")
-            print("Try running the script with 'sudo' for full functionality")
-    except Exception as e:
-        display_error(f"Root check test failed: {str(e)}")
-    
-    input("\nPress Enter to continue...")
-    HistoryBar().pop()
+    menu_tracker.pop()
+    return main_menu()
 
 def test_error_handling():
-    """Test various error handling scenarios"""
-    HistoryBar().push("Error Handling Test")
-    
-    test_scenarios = [
-        ("Invalid Input", lambda: get_input("Test input", validator=lambda x: False)),
-        ("Empty Required Field", lambda: get_input("Test input", required=True)),
-        ("Invalid Choice", lambda: get_input("Test input", choices=["1", "2"]))
-    ]
-    
-    print("\nTesting error handling scenarios...")
-    for scenario, test_func in test_scenarios:
-        print(f"\nTesting: {scenario}")
-        try:
-            test_func()
-        except Exception as e:
-            print(format_error(f"Expected error occurred: {str(e)}"))
-    
-    input("\nPress Enter to continue...")
-    HistoryBar().pop()
-
-def test_navigation_options():
-    """Test the new navigation options functionality"""
-    HistoryBar().push("Navigation Options Test")
-    
-    print("\nTesting navigation options in different menu depths:")
-    
-    # Test main menu (should only show exit)
+    """Test error handling and logging functionality"""
     clear_screen()
-    print("\n=== Main Menu Test ===")
-    main_options = [
-        ("1", "Test Option 1", "First test option"),
-        ("2", "Test Option 2", "Second test option")
-    ]
-    main_options = add_navigation_options(main_options)
-    get_input("Press Enter to continue to submenu test...", choices=main_options)
+    menu_tracker.push("Error Handling Test")
     
-    # Test first submenu (should show both back and exit)
-    HistoryBar().push("Submenu Level 1")
-    clear_screen()
-    print("\n=== Submenu Level 1 Test ===")
-    submenu_options = [
-        ("1", "Sub Option 1", "First sub option"),
-        ("2", "Sub Option 2", "Second sub option")
-    ]
-    submenu_options = add_navigation_options(submenu_options)
-    get_input("Press Enter to continue to deep submenu test...", choices=submenu_options)
+    print(ASCII_ART)
+    print(create_border(NAV_BORDER_CHAR))
+    print(menu_tracker.display())
+    print(create_border(NAV_BORDER_CHAR))
     
-    # Test deep submenu (should show both back and exit)
-    HistoryBar().push("Deep Submenu")
-    clear_screen()
-    print("\n=== Deep Submenu Test ===")
-    deep_options = [
-        ("1", "Deep Option 1", "First deep option"),
-        ("2", "Deep Option 2", "Second deep option")
-    ]
-    deep_options = add_navigation_options(deep_options)
-    get_input("Press Enter to test navigation...", choices=deep_options)
+    print("\n1. Testing basic error display")
+    print("--------------------------")
+    show_error("This is a test error message")
     
-    # Test navigation
-    while len(HistoryBar().stack) > 1:
-        clear_screen()
-        print(f"\nCurrent menu: {HistoryBar().stack[-1]}")
-        nav_options = [("1", "Test Option", "Test option")]
-        nav_options = add_navigation_options(nav_options)
-        choice = get_input("Select an option (use 'b' to go back)", choices=nav_options)
-        
-        should_exit, was_handled = process_menu_choice(choice, {"1": lambda: None})
-        if should_exit:
-            break
-    
-    HistoryBar().pop()  # Clean up any remaining history
-    print(f"\n{Fore.LIGHTGREEN_EX}✓ Navigation options test complete!{Style.RESET_ALL}")
-    input("\nPress Enter to continue...")
-
-def main():
-    """Main test execution function"""
-    logger.info("Starting test script")
+    print("\n2. Testing exception handling")
+    print("--------------------------")
     try:
-        test_functions = {  # Define test_functions before using it
-            "1": test_utils_features,
-            "2": test_display_features,
-            "3": test_menu_system,
-            "4": test_history_bar,
-            "5": test_root_check,
-            "6": test_logging_system,
-            "7": test_error_handling,
-            "8": test_navigation_options
-        }
-        
-        while True:
-            clear_screen()
-            centered_ascii = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
-            print(centered_ascii + "\n")
-            display_history()
-            
-            main_options = [
-                ("1", "Utils Tests", "Test input and validation features"),
-                ("2", "Display Tests", "Test display and formatting features"),
-                ("3", "Menu Tests", "Test menu system functionality"),
-                ("4", "History Bar", "Test history bar features"),
-                ("5", "Root Check", "Test root privilege checking"),
-                ("6", "Logging", "Test logging system"),
-                ("7", "Error Handling", "Test error handling scenarios"),
-                ("8", "Navigation Options", "Test new navigation options"),
-            ]
-            
-            # Add navigation options to main menu
-            main_options = add_navigation_options(main_options)
-            
-            choice = get_input("Select Test Suite", choices=main_options)
-            
-            should_exit, was_handled = process_menu_choice(choice, test_functions)
-            
-            if should_exit:
-                break
-            elif was_handled and choice in test_functions:
-                test_functions[choice]()
-
-    except KeyboardInterrupt:
-        logger.info("Test script interrupted by user")
-        print("\nTest script interrupted by user")
+        # Intentionally cause an error
+        print("Dividing by zero...")
+        result = 1 / 0
     except Exception as e:
-        logger.error(f"Fatal error in test script: {str(e)}", exc_info=True)
-        display_error(f"Fatal error in test script: {str(e)}")
+        logger.error(f"Caught exception: {str(e)}")
+        show_error(f"Caught exception: {str(e)}")
     
-    logger.info("Test script completed")
-    print("\nTest script completed")
-    input("\nPress Enter to exit...")
+    print("\n3. Testing AppError custom exceptions")
+    print("---------------------------------")
+    try:
+        # Simulate a custom error
+        print("Raising AppError...")
+        raise AppError("This is a custom application error")
+    except AppError as e:
+        logger.error(f"Caught AppError: {str(e)}")
+        show_error(f"Caught AppError: {str(e)}")
+    
+    print("\n4. Testing error message formatting")
+    print("-------------------------------")
+    error_message = format_error_message("Cannot access required file")
+    print(error_message)
+    
+    choice = get_input("\nPress 'B' to go back or 'X' to exit: ", ["B", "X"], case_insensitive=True)
+    if choice.upper() == "X":
+        graceful_exit("Exiting test script...", 0)
+    
+    menu_tracker.pop()
+    return main_menu()
+
+def test_root_check():
+    """Test the root check functionality"""
+    clear_screen()
+    menu_tracker.push("Root Check Test")
+    
+    print(ASCII_ART)
+    print(create_border(NAV_BORDER_CHAR))
+    print(menu_tracker.display())
+    print(create_border(NAV_BORDER_CHAR))
+    
+    print("\n1. Simulating root check")
+    print("---------------------")
+    print("This will simulate both a successful and failed root check.")
+    
+    # Test successful root check
+    print("\nSimulating successful root check (user is root):")
+    
+    try:
+        # Mock the os.geteuid function temporarily to simulate root access
+        original_geteuid = os.geteuid
+        os.geteuid = lambda: 0
+        
+        result = check_root()
+        print(format_success("Root check passed: User appears to be root"))
+        
+        # Restore the original function
+        os.geteuid = original_geteuid
+    except Exception as e:
+        logger.error(f"Error during root check test: {str(e)}")
+        show_error(f"Error during root check test: {str(e)}")
+    
+    # Test failed root check
+    print("\nSimulating failed root check (user is not root):")
+    
+    try:
+        # Mock the os.geteuid function temporarily to simulate non-root access
+        original_geteuid = os.geteuid
+        os.geteuid = lambda: 1000
+        
+        result = check_root()
+        print(format_error_message("This should not be displayed because check_root should exit"))
+        
+        # Restore the original function
+        os.geteuid = original_geteuid
+    except SystemExit:
+        print(format_success("Root check correctly attempted to exit when not root"))
+    except Exception as e:
+        logger.error(f"Unexpected error during root check test: {str(e)}")
+        show_error(f"Unexpected error during root check test: {str(e)}")
+    finally:
+        # Make sure we restore the original function even if there's an error
+        os.geteuid = original_geteuid
+    
+    choice = get_input("\nPress 'B' to go back or 'X' to exit: ", ["B", "X"], case_insensitive=True)
+    if choice.upper() == "X":
+        graceful_exit("Exiting test script...", 0)
+    
+    menu_tracker.pop()
+    return main_menu()
+
+def test_logging():
+    """Test the logging functionality"""
+    clear_screen()
+    menu_tracker.push("Logging Test")
+    
+    print(ASCII_ART)
+    print(create_border(NAV_BORDER_CHAR))
+    print(menu_tracker.display())
+    print(create_border(NAV_BORDER_CHAR))
+    
+    print("\n1. Testing logging at different levels")
+    print("---------------------------------")
+    
+    logger.debug("This is a DEBUG level test message")
+    print(format_success("Debug message logged"))
+    
+    logger.info("This is an INFO level test message")
+    print(format_success("Info message logged"))
+    
+    logger.warning("This is a WARNING level test message")
+    print(format_success("Warning message logged"))
+    
+    logger.error("This is an ERROR level test message")
+    print(format_success("Error message logged"))
+    
+    logger.critical("This is a CRITICAL level test message")
+    print(format_success("Critical message logged"))
+    
+    print("\n2. Testing exception logging")
+    print("------------------------")
+    try:
+        # Cause an exception
+        x = 1 / 0
+    except Exception as e:
+        logger.exception("Exception occurred during division")
+        print(format_success("Exception logged with traceback"))
+    
+    print("\n3. Log file location")
+    print("----------------")
+    log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+    print(f"Logs are being stored in: {log_dir}")
+    
+    if os.path.exists(log_dir):
+        log_files = [f for f in os.listdir(log_dir) if f.endswith('.log')]
+        if log_files:
+            print(format_success(f"Found {len(log_files)} log file(s):"))
+            for log_file in log_files:
+                print(f" - {log_file}")
+        else:
+            print(format_error_message("No log files found in the log directory"))
+    else:
+        print(format_error_message(f"Log directory {log_dir} does not exist"))
+    
+    choice = get_input("\nPress 'B' to go back or 'X' to exit: ", ["B", "X"], case_insensitive=True)
+    if choice.upper() == "X":
+        graceful_exit("Exiting test script...", 0)
+    
+    menu_tracker.pop()
+    return main_menu()
+
+def main_menu():
+    """Display the main test menu and handle user input"""
+    clear_screen()
+    menu_tracker.reset()
+    menu_tracker.push("Test Menu")
+    
+    print(ASCII_ART)
+    print(create_border(NAV_BORDER_CHAR))
+    print(menu_tracker.display())
+    print(create_border(NAV_BORDER_CHAR))
+    
+    print("\nPterodactyl-Pelican-Wireguard-Manager Test Script")
+    print("===============================================")
+    print("\nSelect a test to run:")
+    print("1. Display Utilities")
+    print("2. Navigation Tracker")
+    print("3. Input Utilities")
+    print("4. Error Handling")
+    print("5. Root Check")
+    print("6. Logging")
+    print("X. Exit")
+    
+    choice = get_input("\nEnter your choice: ", ["1", "2", "3", "4", "5", "6", "X"], case_insensitive=True)
+    
+    if choice == "1":
+        return test_display_utilities()
+    elif choice == "2":
+        return test_navigation_tracker()
+    elif choice == "3":
+        return test_input_utilities()
+    elif choice == "4":
+        return test_error_handling()
+    elif choice == "5":
+        return test_root_check()
+    elif choice == "6":
+        return test_logging()
+    elif choice.upper() == "X":
+        graceful_exit("Exiting test script...", 0)
+    else:
+        show_error("Invalid selection")
+        return main_menu()
 
 if __name__ == "__main__":
-    # Initialize logging for test script
-    setup_logging()
-    main()
+    # Disable root check for testing purposes
+    # check_root()  # Uncomment to enforce root check in tests
+    
+    try:
+        main_menu()
+    except KeyboardInterrupt:
+        logger.info("KeyboardInterrupt received")
+        graceful_exit("\nTest script terminated by user", 0)
+    except AppError as e:
+        logger.error(f"Application error: {str(e)}")
+        show_error(f"Application error: {str(e)}")
+        sys.exit(1)
+    except Exception as e:
+        logger.exception("Unhandled exception")
+        show_error(f"Unhandled exception: {str(e)}")
+        sys.exit(1)

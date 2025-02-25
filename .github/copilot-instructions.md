@@ -5,12 +5,8 @@
 ## 1. General Information & Communication
 
 - **User Identity:** My name is **Logan**. Please always address me as Logan.
-- **Detailed Explanations:**  
-  - Provide clear, detailed, and easy-to-understand explanations for every change.
-  - When making multiple changes, break your explanations into bullet points or separate sections.
 - **Chat-Only Requests:**  
-  - If I request you to "show in chat" or "show before applying," **do not make any code changes**.
-  - Only respond with the proposed modifications or suggestions in chat.
+  - If I request you to "show in chat" or "show before applying," **do not make any code changes** and only respond with the proposed modifications or suggestions in chat.
 
 ---
 
@@ -18,14 +14,15 @@
 
 - **Primary Language:**  
   - The project is written entirely in **Python**, with some occasional Bash scripts.
-  - All generated code and suggestions should follow common Python best practices (PEP 8, clean code principles, etc.).
+  - All generated code and changes to code and suggestions should follow common Python best practices (PEP 8, clean code principles, etc.).
 - **No Type Hints:**  
   - Under no circumstances should type hints be added or suggested. This project explicitly avoids type hinting.
-  - If new user prompts are generated, ensure the generated code is using the get_input functionality from the general_utils.py file
-  - If generating code to display an error to the user, ensure the generated code is using the format_error functionality from the disp_utils.py file
-  - When generating any new code, ensure that color and formatting standards set in the general_utils.py and disp_utils.py files are followed
-  - Always reuse existing functions and classes when possible, and avoid creating new ones unless absolutely necessary. Reusable functions and classes should be located in the general_utils.py file and the disp_utils.py file
-  - When generating and or adding new code, ensure that the logging feature is being used within the new code to properly log information where it makes sense to add logging to the code
+  - If new user prompts are generated or modified, ensure the generated code is using the get_input or similar functionality from wherever there is reusable code for getting user input.
+  - If generating or modifying code to display an error to the user, ensure the generated code is using the reusable error message functionality.
+  - When generating or changing any code, ensure that color and formatting standards found in already existing working files are followed.
+  - Always reuse existing functions and classes when possible.
+  - When generating or modifying code, try to make classes and functions reusable by other parts of the codebase.
+  - When generating new code or adding new code or changing existing code, ensure that the logging feature is being used within the new or modified code to properly log information. Do not add logging to every single feature, only where it makes sense or is beneficial to add logging.
 
 ---
 
@@ -37,7 +34,7 @@
 - **Code Movement & Refactoring:**  
   - When moving code between modules or sections, **remove the old code** from its original location.
   - Automatically update, add, or remove import statements in both the source and destination files.
-  - Ensure no unused or unreferenced code is left behind.
+  - Ensure no unused or unreferenced code is left behind. Deligently check and remove any unused or unnecessary code.
   
 ---
 
@@ -45,18 +42,21 @@
 
 - **Error Handling:**  
   - Include proper error handling wherever applicable to prevent unexpected failures.
+  - With error handling, ensure that error messages are displayed to the user and also logged using the logging functionality.
 - **Documentation:**  
   - Every function, class, and major code block must include a detailed docstring explaining its purpose and usage.
-  - Add inline `# comments` for large sections of code to describe overall functionality.
+  - Add comprehensive module-level and function-level docstrings.
+  - Add inline `# comments` for large sections of code to describe overall functionality in addition to docstrings.
   - Use inline comments to mark and explain different sections or categories (e.g., `# ---- Database Functions ----`).
-  - Remove or update outdated comments that no longer match the code.
+  - Remove or update outdated comments that no longer match the code or its explanation.
+  - Ensure that all docstrings and comments are written in clear, concise, and easy-to-understand language.
 
 ---
 
 ## 5. Change Management & Reporting
 
-- **Detailed Change Summaries:**  
-  - For every change, provide an explanation of what was modified and why.
+- **Detailed Change Summaries and Explanations:**  
+  - For every change, provide clear, detailed, and easy-to-understand explanations.
   - Break down multiple changes into separate bullet points or sections (e.g., listing file movements, error handling additions, etc.).
 - **Unrequested Improvements:**  
   - If you implement improvements based on common Python best practices that weren’t explicitly requested, inform me with a clear explanation of the change and its benefits.
@@ -76,6 +76,7 @@
   - If you find a more Pythonic solution than what’s explicitly asked, implement it—but make sure to notify me of the change and explain the reasoning.
 - **Import Management:**  
   - Keep imports updated and relevant. Automatically adjust them when code is added, moved, or removed.
+  - If functions or code or classes or anything related is changed, look through the modules and ensure that imports and names within the code of all the effected modules are properly updated to reflect the changes.
 
 ---
 

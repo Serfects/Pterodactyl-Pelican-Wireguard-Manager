@@ -1,0 +1,111 @@
+
+# Recommended Guidelines for Copilot Instructions
+
+## Module Dependency and Import Management
+
+- **Dependency Hierarchy:**
+  - Maintain a clear dependency hierarchy where utility modules (like base_utils, display_utils, input_utils) are at the bottom layer.
+  - Middle-layer modules (like navigation, configuration handlers) should depend only on utility modules.
+  - Top-layer modules (like main_menu, application-specific features) can depend on both utility and middle-layer modules.
+
+- **Import Structure:**
+  - Group imports logically: standard library first, third-party packages second, local modules last.
+  - Within each group, maintain alphabetical order when possible.
+  - Use explicit imports (e.g., `from module import specific_function`) for clarity.
+
+- **Preventing Circular Imports:**
+  - When creating new modules or refactoring existing ones, draw a dependency diagram to visualize relationships.
+  - Use dependency injection where appropriate (passing dependencies as parameters).
+  - Consider using late imports (importing inside functions) only when necessary to break circular dependencies.
+  - When faced with potential circular imports, extract shared functionality to a lower-level module.
+
+## Code Organization Standards
+
+- **Module Organization:**
+  - Organize related functionality into cohesive modules.
+  - Each module should have a clear, single responsibility.
+  - Keep modules focused on specific domains (e.g., UI, network, configuration).
+
+- **Function and Class Placement:**
+  - Place functions in modules where they have the strongest conceptual connection.
+  - Move frequently reused utility functions to appropriate utility modules.
+  - When a function serves a very specific purpose for a single feature, keep it in the feature module.
+
+- **Reusability:**
+  - Design functions and classes with reusability in mind.
+  - Avoid hardcoding values that might need to change across different uses.
+  - Use parameter defaults for optional configuration.
+
+## Error Handling and Logging
+
+- **Error Management Hierarchy:**
+  - Use custom AppError exceptions for application-specific errors.
+  - Implement contextual error messages that guide the user toward resolution.
+  - Separate user-facing error messages from technical logs.
+
+- **Logging Strategy:**
+  - Log at appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+  - Include sufficient context in log messages for troubleshooting.
+  - Log start and completion of significant operations.
+  - Add timestamps and operation IDs for tracing request flows.
+
+## Testing and Documentation
+
+- **Testable Code Structure:**
+  - Design functions with testing in mind (single responsibility, clear inputs/outputs).
+  - Avoid global state that complicates testing.
+  - Use dependency injection to make components testable in isolation.
+
+- **Documentation Standards:**
+  - Maintain consistent docstring format across all code.
+  - Document parameters, return values, and exceptions raised.
+  - Include usage examples for complex functions.
+  - Add module-level docstrings explaining the overall purpose and organization.
+
+## Performance Considerations
+
+- **Resource Management:**
+  - Close resources (files, connections) using context managers when possible.
+  - Be mindful of memory usage with large data structures.
+
+- **Optimization Guidelines:**
+  - Focus on algorithm efficiency before micro-optimizations.
+  - Use appropriate data structures (dictionaries for lookups, sets for membership tests).
+  - Avoid premature optimization but be aware of operations that scale poorly.
+
+## User Interface Consistency
+
+- **Color and Formatting:**
+  - Maintain consistent color schemes for different message types (errors, success, warnings).
+  - Follow established patterns for menu layouts and user prompts.
+  - Ensure consistent spacing and alignment in text-based interfaces.
+
+- **User Feedback:**
+  - Provide clear progress indicators for long-running operations.
+  - Return to a known state (e.g., main menu) after errors.
+  - Confirm successful operations with clear messages.
+
+
+
+
+
+
+
+
+Solution: Creating Guidelines for Code Organization and Import Management
+I'll create a new file with recommendations for adding to your Copilot instructions to address dependency management, import structuring, and other best practices.
+
+recommended_copilot_guidelines.txt
+This new file will contain guidelines that can be added to your Copilot instructions file.
+
+recommended_copilot_guidelines.txt+95-1
+These guidelines can significantly enhance your existing Copilot instructions with specific focus on code organization and dependency management. The recommendations address the issues you've encountered with circular imports and provide a structured approach to maintaining clean code architecture.
+
+The key additions focus on:
+
+Establishing a clear dependency hierarchy with utility modules at the bottom
+Techniques for preventing circular imports
+Standards for code organization and module responsibility
+Consistent error handling and logging approaches
+Guidelines for writing testable and well-documented code
+You can incorporate these suggestions into your existing copilot_instructions.md file as appropriate, adapting them to match your project's specific needs and conventions.
