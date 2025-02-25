@@ -3,12 +3,46 @@
 ## Commit Name: [commit name goes here]
 
 ### Changes Made
-1. Example 1
-   - Details
+1. Logging Feature
+   - Added logging functionality to script to create log files for errors and debugging
+   - Added rotating file feature to log files to prevent them from getting too large
+   - Added much more logging to nearly all functions of the script in each module
+   - Ensured that errors that are displayed to the user follow the correct error message formatting and are also logged to the log file
+   - Added more error messages for errors that could come up to all the modules
 
-2. Example 2
-   - Details
+2. copilot_instructions.md
+   - Updated copilot_instructions.md to include new instructions for specifiying to use resuable code and use standards already set in the other modules
+   - 
 
+3. Root Check
+   - Added a root check to the script to make sure the script is ran as root and automatically closes after showing the user a message if it is not
+
+4. Test Script
+   - Updated the test script to add testing in for error handling, the root check feature, and testing the logging features
+   - Added logging to the test script
+   - Updated imports
+   - Added new test functions and compatibility for the new b for back and x for exit navigation features
+   The major changes include:
+
+   Added new test functions:
+
+   - test_logging_system(): Tests the logging configuration and functionality
+   - test_root_check(): Tests the root privilege checking
+   - test_error_handling(): Tests various error scenarios
+   - Updated imports to include new utilities:
+
+   - Added imports for logging-related functions
+   - Added import for root check functionality
+   - Added proper logging throughout the test script
+
+   - Updated the main menu to include the new test options
+
+   - Improved error handling and display formatting
+
+5. B for back X for exit
+   - Added the functionality for the reusable B to go back and X to exit to all the menus in the script
+   - Addded a border above this dialog to make it stand out more
+   - Made the text very dark and the above border slightly lighter
 ===============================================================================================================
 ## Date/Time: Tue Feb 18 09:05:06 2025 +0000
 ## Commit Name: Appearance changes finalization

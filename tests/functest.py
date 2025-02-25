@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 from pathlib import Path
 from colorama import init, Fore, Style
 
@@ -13,10 +14,16 @@ sys.path.append(str(src_path))
 from disp_utils import (
     center_text, ASCII_ART, HistoryBar,
     display_history, clear_screen, display_error,
-    show_progress
+    show_progress, format_error, format_success
 )
-from general_utils import get_input, confirm_action, MenuExecutionError
+from general_utils import (
+    get_input, confirm_action, MenuExecutionError,
+    check_root, setup_logging, add_navigation_options, process_menu_choice
+)
 from main_menu import graceful_exit
+
+# Initialize logger for test script
+logger = logging.getLogger(__name__)
 
 def test_utils_features():
     """Test various input and validation features"""
@@ -186,9 +193,160 @@ def test_ascii_art_styles():
     input("\nPress Enter to continue...")
     HistoryBar().pop()
 
+def test_logging_system():
+    """Test the logging system configuration and functionality"""
+    HistoryBar().push("Logging System Test")
+    
+    test_results = []
+    
+    try:
+        # Test log file creation
+        logger.info("Testing logging system")
+        test_results.append(("Log File Creation", True))
+        
+        # Test different log levels
+        logger.debug("Test debug message")
+        logger.info("Test info message")
+        logger.warning("Test warning message")
+        logger.error("Test error message")
+        test_results.append(("Log Levels", True))
+        
+        # Test error formatting
+        error_msg = "Test error formatting"
+        formatted_error = format_error(error_msg)
+        print(f"\nTesting error formatting:\n{formatted_error}")
+        test_results.append(("Error Formatting", True))
+        
+        # Test success formatting
+        success_msg = "Test success formatting"
+        formatted_success = format_success(success_msg)
+        print(f"\nTesting success formatting:\n{formatted_success}")
+        test_results.append(("Success Formatting", True))
+        
+    except Exception as e:
+        display_error(f"Logging test failed: {str(e)}")
+        test_results.append(("Logging System", False))
+    
+    # Display test results
+    print("\n=== Logging System Test Results ===")
+    for test_name, result in test_results:
+        status = format_success("PASS") if result else format_error("FAIL")
+        print(f"{test_name}: {status}")
+    
+    input("\nPress Enter to continue...")
+    HistoryBar().pop()
+
+def test_root_check():
+    """Test the root privilege checking functionality"""
+    HistoryBar().push("Root Check Test")
+    
+    print("\nTesting root privilege check...")
+    try:
+        current_euid = os.geteuid()
+        is_root = current_euid == 0
+        
+        print(f"\nCurrent effective UID: {current_euid}")
+        print(f"Running as root: {format_success('Yes') if is_root else format_error('No')}")
+        
+        if not is_root:
+            print("\nNote: Some features may be limited without root privileges")
+            print("Try running the script with 'sudo' for full functionality")
+    except Exception as e:
+        display_error(f"Root check test failed: {str(e)}")
+    
+    input("\nPress Enter to continue...")
+    HistoryBar().pop()
+
+def test_error_handling():
+    """Test various error handling scenarios"""
+    HistoryBar().push("Error Handling Test")
+    
+    test_scenarios = [
+        ("Invalid Input", lambda: get_input("Test input", validator=lambda x: False)),
+        ("Empty Required Field", lambda: get_input("Test input", required=True)),
+        ("Invalid Choice", lambda: get_input("Test input", choices=["1", "2"]))
+    ]
+    
+    print("\nTesting error handling scenarios...")
+    for scenario, test_func in test_scenarios:
+        print(f"\nTesting: {scenario}")
+        try:
+            test_func()
+        except Exception as e:
+            print(format_error(f"Expected error occurred: {str(e)}"))
+    
+    input("\nPress Enter to continue...")
+    HistoryBar().pop()
+
+def test_navigation_options():
+    """Test the new navigation options functionality"""
+    HistoryBar().push("Navigation Options Test")
+    
+    print("\nTesting navigation options in different menu depths:")
+    
+    # Test main menu (should only show exit)
+    clear_screen()
+    print("\n=== Main Menu Test ===")
+    main_options = [
+        ("1", "Test Option 1", "First test option"),
+        ("2", "Test Option 2", "Second test option")
+    ]
+    main_options = add_navigation_options(main_options)
+    get_input("Press Enter to continue to submenu test...", choices=main_options)
+    
+    # Test first submenu (should show both back and exit)
+    HistoryBar().push("Submenu Level 1")
+    clear_screen()
+    print("\n=== Submenu Level 1 Test ===")
+    submenu_options = [
+        ("1", "Sub Option 1", "First sub option"),
+        ("2", "Sub Option 2", "Second sub option")
+    ]
+    submenu_options = add_navigation_options(submenu_options)
+    get_input("Press Enter to continue to deep submenu test...", choices=submenu_options)
+    
+    # Test deep submenu (should show both back and exit)
+    HistoryBar().push("Deep Submenu")
+    clear_screen()
+    print("\n=== Deep Submenu Test ===")
+    deep_options = [
+        ("1", "Deep Option 1", "First deep option"),
+        ("2", "Deep Option 2", "Second deep option")
+    ]
+    deep_options = add_navigation_options(deep_options)
+    get_input("Press Enter to test navigation...", choices=deep_options)
+    
+    # Test navigation
+    while len(HistoryBar().stack) > 1:
+        clear_screen()
+        print(f"\nCurrent menu: {HistoryBar().stack[-1]}")
+        nav_options = [("1", "Test Option", "Test option")]
+        nav_options = add_navigation_options(nav_options)
+        choice = get_input("Select an option (use 'b' to go back)", choices=nav_options)
+        
+        should_exit, was_handled = process_menu_choice(choice, {"1": lambda: None})
+        if should_exit:
+            break
+    
+    HistoryBar().pop()  # Clean up any remaining history
+    print(f"\n{Fore.LIGHTGREEN_EX}✓ Navigation options test complete!{Style.RESET_ALL}")
+    input("\nPress Enter to continue...")
+
 def main():
     """Main test execution function"""
+    logger.info("Starting test script")
     try:
+        test_functions = {  # Define test_functions before using it
+            "1": test_utils_features,
+            "2": test_display_features,
+            "3": test_menu_system,
+            "4": test_history_bar,
+            "5": test_root_check,
+            "6": test_logging_system,
+            "7": test_error_handling,
+            "8": test_navigation_options
+        }
+        
         while True:
             clear_screen()
             centered_ascii = "\n".join(center_text(line) for line in ASCII_ART.strip().split("\n"))
@@ -200,39 +358,36 @@ def main():
                 ("2", "Display Tests", "Test display and formatting features"),
                 ("3", "Menu Tests", "Test menu system functionality"),
                 ("4", "History Bar", "Test history bar features"),
-                ("5", "ASCII Styles", "Compare ASCII art border styles"),
-                ("x", "Exit", "Exit test script")
+                ("5", "Root Check", "Test root privilege checking"),
+                ("6", "Logging", "Test logging system"),
+                ("7", "Error Handling", "Test error handling scenarios"),
+                ("8", "Navigation Options", "Test new navigation options"),
             ]
+            
+            # Add navigation options to main menu
+            main_options = add_navigation_options(main_options)
             
             choice = get_input("Select Test Suite", choices=main_options)
             
-            if choice.lower() == "x":
-                if confirm_action("Are you sure you want to exit testing?"):
-                    break
-                continue
-                
-            try:
-                if choice == "1":
-                    test_utils_features()
-                elif choice == "2":
-                    test_display_features()
-                elif choice == "3":
-                    test_menu_system()
-                elif choice == "4":
-                    test_history_bar()
-                elif choice == "5":
-                    test_ascii_art_styles()
-                    
-            except MenuExecutionError as e:
-                display_error(str(e))
-                if not confirm_action("Continue testing?"):
-                    break
-                    
+            should_exit, was_handled = process_menu_choice(choice, test_functions)
+            
+            if should_exit:
+                break
+            elif was_handled and choice in test_functions:
+                test_functions[choice]()
+
+    except KeyboardInterrupt:
+        logger.info("Test script interrupted by user")
+        print("\nTest script interrupted by user")
     except Exception as e:
+        logger.error(f"Fatal error in test script: {str(e)}", exc_info=True)
         display_error(f"Fatal error in test script: {str(e)}")
-        graceful_exit("Test script terminated due to error", 1)
-        
-    graceful_exit("Test script completed", 0)
+    
+    logger.info("Test script completed")
+    print("\nTest script completed")
+    input("\nPress Enter to exit...")
 
 if __name__ == "__main__":
+    # Initialize logging for test script
+    setup_logging()
     main()

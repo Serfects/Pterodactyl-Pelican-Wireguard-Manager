@@ -11,3 +11,18 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
                             Main Menu                               
 ──────────────────────────────────────────────────────────────────────
+
+Available options:
+  • (1) VPS Setup Wizard
+      Configure VPS for first-time use
+  • (2) Feature 1
+      First feature placeholder
+  • (3) Feature 2
+      Second feature placeholder
+
+
+────────────────────────
+x) Exit application
+      Close the program
+
+Your Entry: ▸

@@ -1,8 +1,12 @@
 # ========== Imports ==========
 import re
+import logging
 from colorama import Style, Fore
 import time, sys
 import os
+
+# Initialize logger for this module
+logger = logging.getLogger(__name__)
 
 # ========== General Constants ==========
 SCREEN_WIDTH = 70
@@ -26,28 +30,37 @@ def split_formatting(text):
 
 def format_error(text):
     """Add warning symbol and red coloring to error message"""
+    logger.error(text)  # Log error messages when they're formatted
     return f"{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}{text}{Style.RESET_ALL}"
 
 def format_success(text):
     """Add checkmark and green coloring to success message"""
+    logger.info(text)  # Log success messages
     return f"{Fore.LIGHTGREEN_EX}✓ {text}{Style.RESET_ALL}"
 
 # ========== Display Layout Functions ==========
 def clear_screen():
     """Clear the terminal screen"""
+    logger.debug("Clearing screen")
     os.system('clear' if os.name == 'posix' else 'cls')
 
 def center_text(text, width=None, fill_char=" "):
     """Center the given text in available space, accounting for ANSI formatting and truncation"""
+    logger.debug(f"Centering text (width={width}, fill_char='{fill_char}')")
     if not fill_char:
+        logger.error("Empty fill character provided")
+        display_error("Invalid formatting: Empty fill character")
         raise ValueError("Fill character cannot be empty")
     actual_width = width if width is not None else SCREEN_WIDTH
     if actual_width < 0:
+        logger.error(f"Invalid width provided: {actual_width}")
+        display_error("Invalid formatting: Negative width value")
         raise ValueError("Width cannot be negative")
     stripped_text = strip_ansi(text)
     
     # Handle text that's too long by truncating
     if len(stripped_text) > actual_width:
+        logger.debug(f"Truncating text: '{stripped_text}' to fit width {actual_width}")
         # Calculate how much text we can keep plus ellipsis
         keep_length = actual_width - 3  # Space for "..."
         
@@ -68,15 +81,25 @@ def create_border(char=None, width=None):
     if not char:
         char = HISTORYBAR_BORDER_CHAR
     if not char.strip():
+        logger.error("Empty border character provided")
+        display_error("Invalid formatting: Empty border character")
         raise ValueError("Border character cannot be empty or whitespace")
     actual_width = width if width is not None else SCREEN_WIDTH
     if actual_width < 0:
+        logger.error(f"Invalid border width: {actual_width}")
+        display_error("Invalid formatting: Negative border width")
         raise ValueError("Width cannot be negative")
     return char * actual_width
 
 def graceful_exit(message="", exit_code=0):
     """Display exit message and terminate application gracefully"""
+    if exit_code != 0:
+        logger.warning(f"Application exiting with non-zero status code: {exit_code}")
+    else:
+        logger.info("Application exiting normally")
+    
     if message:
+        logger.info(f"Exit message: {message}")
         print(center_text(f"\n{Fore.YELLOW}{message}{Style.RESET_ALL}"))
     print(center_text(f"\n{Fore.YELLOW}Thank you for using WireGuard Management{Style.RESET_ALL}"))
     print(create_border(HISTORYBAR_BORDER_CHAR))
@@ -84,12 +107,16 @@ def graceful_exit(message="", exit_code=0):
 
 def display_error(message):
     """Display error message with consistent formatting"""
+    logger.error(message)
     print(f"\n{Fore.YELLOW}⚠ {Fore.LIGHTRED_EX}{message}{Style.RESET_ALL}")
 
 # ========== Progress Indicator ==========
 def show_progress(message, duration):
     """Show animated progress dots with the given message"""
+    logger.debug(f"Starting progress indicator: {message}")
     if duration < 0:
+        logger.error(f"Invalid progress duration: {duration}")
+        display_error("Invalid progress duration: Must be non-negative")
         raise ValueError("Duration must be non-negative")
     try:
         print(f"\n{Fore.LIGHTMAGENTA_EX}{message}...{Style.RESET_ALL}")
@@ -98,8 +125,14 @@ def show_progress(message, duration):
             sys.stdout.flush()
             time.sleep(0.1)
         print(f"\n{Fore.LIGHTGREEN_EX}✓ {Fore.LIGHTGREEN_EX}Complete!{Style.RESET_ALL}")
+        logger.debug("Progress indicator completed normally")
     except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}Progress interrupted{Style.RESET_ALL}")
+        logger.warning("Progress indicator interrupted by user")
+        display_error("Operation cancelled by user")
+        raise
+    except Exception as e:
+        logger.error(f"Error in progress indicator: {str(e)}")
+        display_error(f"Progress indicator error: {str(e)}")
         raise
 
 # ========== History Bar Section ==========
@@ -120,22 +153,30 @@ class HistoryBar:
         if cls._instance is None:
             cls._instance = super(HistoryBar, cls).__new__(cls)
             cls._instance.stack = ["Main Menu"]
+            logger.debug("HistoryBar singleton initialized")
         return cls._instance
 
     def push(self, menu_name):
         """Push a new menu name onto the history stack."""
         if not menu_name or not menu_name.strip():
+            logger.error("Attempted to push empty menu name to history")
+            display_error("Invalid menu name: Cannot be empty")
             raise DisplayError("Menu name cannot be empty or whitespace")
+        logger.debug(f"Pushing to history stack: {menu_name}")
         self.stack.append(menu_name.strip())
 
     def pop(self):
-        """Pop the current menu name off the history stack (if not the base menu)."""
+        """Pop the current menu name off the history stack"""
         if len(self.stack) > 1:
-            return self.stack.pop()
+            popped = self.stack.pop()
+            logger.debug(f"Popped from history stack: {popped}")
+            return popped
+        logger.debug("Attempted to pop base menu - ignored")
         return None
 
     def clear(self):
-        """Reset the history bar to only contain the base menu."""
+        """Reset the history bar to only contain the base menu"""
+        logger.debug("Clearing history stack")
         self.stack = ["Main Menu"]
 
     def get_history(self):

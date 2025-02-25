@@ -21,6 +21,11 @@
   - All generated code and suggestions should follow common Python best practices (PEP 8, clean code principles, etc.).
 - **No Type Hints:**  
   - Under no circumstances should type hints be added or suggested. This project explicitly avoids type hinting.
+  - If new user prompts are generated, ensure the generated code is using the get_input functionality from the general_utils.py file
+  - If generating code to display an error to the user, ensure the generated code is using the format_error functionality from the disp_utils.py file
+  - When generating any new code, ensure that color and formatting standards set in the general_utils.py and disp_utils.py files are followed
+  - Always reuse existing functions and classes when possible, and avoid creating new ones unless absolutely necessary. Reusable functions and classes should be located in the general_utils.py file and the disp_utils.py file
+  - When generating and or adding new code, ensure that the logging feature is being used within the new code to properly log information where it makes sense to add logging to the code
 
 ---
 
