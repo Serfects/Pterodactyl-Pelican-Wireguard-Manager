@@ -3,81 +3,109 @@
 ---
 
 ## 1. General Information & Communication
-
-- **User Identity:** My name is **Logan**. Please always address me as Logan.
-- **Chat-Only Requests:**  
-  - If I request you to "show in chat" or "show before applying," **do not make any code changes** and only respond with the proposed modifications or suggestions in chat.
+- **User Identity:** My name is **Logan**. Always address me as Logan.
+- **Chat-Only Requests:** If I say “show in chat” or “show before applying,” propose modifications only in chat with no direct code changes.
 
 ---
 
 ## 2. Project Scope & Language
-
 - **Primary Language:**  
-  - The project is written entirely in **Python**, with some occasional Bash scripts.
-  - All generated code and changes to code and suggestions should follow common Python best practices (PEP 8, clean code principles, etc.).
+  - The project is written in **Python** (with occasional Bash scripts).
+  - Follow common Python best practices (PEP 8, clean code principles, etc.).
 - **No Type Hints:**  
-  - Under no circumstances should type hints be added or suggested. This project explicitly avoids type hinting.
-  - If new user prompts are generated or modified, ensure the generated code is using the get_input or similar functionality from wherever there is reusable code for getting user input.
-  - If generating or modifying code to display an error to the user, ensure the generated code is using the reusable error message functionality.
-  - When generating or changing any code, ensure that color and formatting standards found in already existing working files are followed.
-  - Always reuse existing functions and classes when possible.
-  - When generating or modifying code, try to make classes and functions reusable by other parts of the codebase.
-  - When generating new code or adding new code or changing existing code, ensure that the logging feature is being used within the new or modified code to properly log information. Do not add logging to every single feature, only where it makes sense or is beneficial to add logging.
+  - Under no circumstances should type hints be added or suggested, unless I explicitly request them.
+- **User Input & Error Output:**  
+  - Use `prompt_user` (or similar functionality) for new or modified user prompts.
+  - Reuse the project’s existing error-message functionality for any new or modified error displays.
+- **Color & Formatting:**  
+  - Adhere to the color/formatting standards found in the existing codebase.
+- **Reusability & Logging:**  
+  - Reuse existing functions and classes whenever possible.
+  - Add logging only where it makes sense or is beneficial. Avoid logging every line unnecessarily.
 
 ---
 
 ## 3. Code Organization & Structure
-
 - **Logical Grouping:**  
-  - Organize code by grouping similar or related functionality together.
-  - Place new code in the correct sections of the existing codebase.
+  - Group similar or related functionality together.  
+  - Place new code in the most appropriate existing sections.
 - **Code Movement & Refactoring:**  
-  - When moving code between modules or sections, **remove the old code** from its original location.
-  - Automatically update, add, or remove import statements in both the source and destination files.
-  - Ensure no unused or unreferenced code is left behind. Deligently check and remove any unused or unnecessary code.
-  
+  - If you move code, remove it from the old location.  
+  - Update or remove import statements automatically.  
+  - Ensure no unused or unreferenced code remains.
+
 ---
 
-## 4. Error Handling & Documentation
-
+## 4. Error Handling & Logging
 - **Error Handling:**  
-  - Include proper error handling wherever applicable to prevent unexpected failures.
-  - With error handling, ensure that error messages are displayed to the user and also logged using the logging functionality.
-- **Documentation:**  
-  - Every function, class, and major code block must include a detailed docstring explaining its purpose and usage.
-  - Add comprehensive module-level and function-level docstrings.
-  - Add inline `# comments` for large sections of code to describe overall functionality in addition to docstrings.
-  - Use inline comments to mark and explain different sections or categories (e.g., `# ---- Database Functions ----`).
-  - Remove or update outdated comments that no longer match the code or its explanation.
-  - Ensure that all docstrings and comments are written in clear, concise, and easy-to-understand language.
+  - Use proper error handling to avoid unexpected crashes.  
+  - Display errors to the user and log them internally.  
+  - Consider using custom exceptions (e.g., `AppError`) for application-specific issues.
+- **Logging Strategy:**  
+  - Log at appropriate levels (`DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`).  
+  - Provide sufficient context for debugging.  
+  - Log the start and completion of major operations if helpful.  
+  - Timestamps or unique operation IDs can be used to trace the flow of requests.
 
 ---
 
-## 5. Change Management & Reporting
+## 5. Documentation
+- **Docstrings & Comments:**  
+  - Provide a docstring for every function, class, and significant code block.  
+  - Keep docstrings clear, concise, and up to date with the code’s behavior.  
+  - Use inline `# comments` to label and describe code sections (e.g., `# ---- Database Functions ----`).  
+  - Remove or revise comments that no longer match the code.
 
-- **Detailed Change Summaries and Explanations:**  
-  - For every change, provide clear, detailed, and easy-to-understand explanations.
-  - Break down multiple changes into separate bullet points or sections (e.g., listing file movements, error handling additions, etc.).
-- **Unrequested Improvements:**  
-  - If you implement improvements based on common Python best practices that weren’t explicitly requested, inform me with a clear explanation of the change and its benefits.
+---
+
+## 6. Change Management & Reporting
+- **Detailed Change Summaries:**  
+  - Explain every change in simple, clear language.
 - **Multi-File Changes:**  
-  - If a change affects multiple files, list all the affected files and explain how the changes interconnect.
-- **Commit-Worthy Sections:**  
-  - When making multiple modifications, organize the explanations as if they were separate commit messages to ensure clarity and maintainability.
+  - List all affected files and clarify how changes interconnect.
+- **Dependency Tracking:**  
+  - If you add an external package or dependency, update (or create) a `dependency.md` file with:
+    - The package/dependency name  
+    - Version requirements (if applicable)  
+    - Short usage or installation notes
+- **Unrequested Improvements:**  
+  - If you make any extra best-practice improvements, notify me with a brief rationale.
 
 ---
 
-## 6. Copilot's Decision-Making & Best Practices
-
+## 7. Copilot’s Decision-Making & Best Practices
 - **Infer Intent:**  
-  - Use your judgment to infer my intent and apply small improvements when they align with best Python practices.
-- **Best Practices:**  
-  - Always strive to produce clean, maintainable, and well-organized code.
-  - If you find a more Pythonic solution than what’s explicitly asked, implement it—but make sure to notify me of the change and explain the reasoning.
+  - Use your judgment to interpret my goals and apply minor improvements that follow Pythonic guidelines.
 - **Import Management:**  
-  - Keep imports updated and relevant. Automatically adjust them when code is added, moved, or removed.
-  - If functions or code or classes or anything related is changed, look through the modules and ensure that imports and names within the code of all the effected modules are properly updated to reflect the changes.
+  - Keep imports tidy and relevant, adjusting automatically when code is moved or removed.
+- **Native/Built-in First:**  
+  - Prefer default Linux packages and built-in Python modules before reaching for external dependencies.
+  - If Linux and Python both offer similar functionality, use whichever is most reliable and efficient.
+  - When an external dependency is clearly superior or simplifies the requested feature significantly, feel free to use it—but remember to update `dependency.md`.
+- **Testing & Performance:**  
+  - Write functions with single responsibilities and clear inputs/outputs for testability.  
+  - Avoid global state.  
+  - Use context managers for resource handling.  
+  - Optimize where needed, but avoid premature optimization.  
 
 ---
 
-Thank you for following these guidelines.
+## 8. Module Dependency & Organization
+- **Dependency Hierarchy:**  
+  - Keep utility modules at the bottom (e.g., `base_utils`, `display_utils`, `input_utils`).  
+  - Middle-layer modules should only depend on utility modules.  
+  - Top-layer modules (like `main_menu` or other features) can depend on both utility and middle-layer modules.
+- **Preventing Circular Imports:**  
+  - Use dependency injection or, if absolutely necessary, late imports (inside functions).  
+  - If a cycle emerges, refactor shared logic into a lower-level module.
+
+---
+
+## 9. User Interface Consistency
+- **Color & Formatting:**  
+  - Maintain a consistent color scheme for errors, success, warnings, menus, context, details, user input, etc.
+- **User Feedback:**  
+  - Provide clear success messages and differentiate them from error or warning messages.  
+  - Ensure spacing and alignment are consistent in text-based interfaces.
+
+---
