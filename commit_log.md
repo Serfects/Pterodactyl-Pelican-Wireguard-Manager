@@ -1,5 +1,32 @@
 ===============================================================================================================
 ## Date/Time: YYYY-MM-DD
+## Commit Name: 
+
+### Changes Made
+1. Copilot Instructions
+    - Updated copilot_instructions.md to include new instructions about properly adding information to this logging file and following already set organization and formatting
+    - Added a new instruction to explain the to Copilot what I am referencing when I say "the script" or "the project" or some variation of either
+    - Added a new instruction to explain to Copilot what I am referencing when I say "the test script" or some variation of that
+    - Added a new instruction abouth making changes that will affect multiple files/modules and how to handle that by only modifying one file/module at a time and waiting for feedback before moving on to the next file/module
+    - Added more new instrctions specifing to Copilot to try to break up longer changes into smaller changes and ask for confirmation before moving on to the next change to avoid hitting the response limit
+    - Added new instructions specific to the new prompt_toolkit introduction
+    - Added even more instructions specific to the new prompt_toolkit introduction
+
+2. Test Scripts for Textual and prompt_toolkit
+    - Created test scripts for both textual and prompt_toolkit features to demonstrate the capabilities of each
+    - prompt_toolkit script works, but textual's broke and I dont care to fix it
+
+3. input_utils.py
+    - Added "Multiple Selection Input Functions" to input_utils.py to handle multiple selection inputs from users during the running of the script. Untested as of now.
+
+4. ppwm-dev-pt
+    - Created a new directory and copied over all current script files that will be used to attempt to convert the current script to use prompt_toolkit for the user interface
+    - Copied slightly modified versions of the script for usage with prompt_toolkit over to the supertemp directory.
+    - Replaced the script files in ppwm-dev-pt with the the versions before any modifications were made for prompt_toolkit
+    
+
+===============================================================================================================
+## Date/Time: YYYY-MM-DD
 ## Commit Name: cleanup and workspace reorganization
 
 ### Changes Made
@@ -16,6 +43,7 @@
     - Heavily optimized copilot_instructions.md for better understanding and faster reasoning for Copilot
     - Added new instructions based on the suggestions that Copilot gave originally that I should add to the instructions to make it function better and or more efficiently
     - Added an old version of the longer instructions to the old directory
+
 ===============================================================================================================
 ## Date/Time: Tue Feb 25 11:52:32 2025 +0000
 ## Commit Name: module reorg code structure improvements

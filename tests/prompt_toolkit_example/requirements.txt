@@ -1,0 +1,5 @@
+# Requirements for prompt_toolkit example
+
+prompt_toolkit>=3.0.0
+pygments>=2.7.0  # For syntax highlighting
+colorama>=0.4.4  # For color support in Windows

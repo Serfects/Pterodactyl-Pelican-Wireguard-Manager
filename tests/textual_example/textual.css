@@ -1,0 +1,304 @@
+/* Main styles for PPWM Textual demo */
+
+Screen {
+    background: #111111;
+    color: #ffffff;
+}
+
+Header {
+    background: #000000;
+    color: #3498db;
+}
+
+Footer {
+    background: #000000;
+    color: #444444;
+}
+
+/* Welcome Screen */
+#ascii-art {
+    width: 100%;
+    content-align: center top;
+    margin: 0 0 1 0;
+    color: #3498db;
+}
+
+#app-title {
+    width: 100%;
+    content-align: center middle;
+    text-style: bold;
+    color: #ffffff;
+    margin-bottom: 1;
+}
+
+#app-subtitle {
+    width: 100%;
+    content-align: center middle;
+    color: #aaaaaa;
+    margin-bottom: 2;
+}
+
+#main-buttons {
+    layout: vertical;
+    width: 60%;
+    height: auto;
+    margin: 1 0 0 0;
+    align: center middle;
+    max-width: 40;
+}
+
+#main-buttons Button {
+    margin-bottom: 1;
+    width: 100%;
+    min-width: 30;
+    max-width: 40;
+}
+
+/* Selection Pages */
+.page-title {
+    text-align: center;
+    text-style: bold;
+    margin-top: 1;
+    margin-bottom: 1;
+    background: #000000;
+    color: #3498db;
+    padding: 1;
+    border: wide #333333;
+    max-width: 80;
+}
+
+.page-description {
+    text-align: center;
+    margin-bottom: 2;
+    color: #aaaaaa;
+}
+
+.button-row {
+    width: 90%;
+    align-horizontal: center;
+    margin: 1 0;
+}
+
+.button-row Button {
+    margin: 0 1;
+    min-width: 12;
+    max-width: 20;
+}
+
+#options-container {
+    height: auto;
+    max-height: 16;
+    overflow-y: scroll;
+    border: solid #333333;
+    padding: 1;
+    margin: 1 0;
+    max-width: 70;
+    width: 90%;
+    align-horizontal: center;
+}
+
+/* Checkbox styling */
+BetterCheckbox {
+    height: auto;
+    margin-bottom: 1;
+    padding: 0 1;
+    border: tall transparent;
+}
+
+BetterCheckbox:hover {
+    border: tall #333333;
+    background: #222222;
+}
+
+.checkbox-content {
+    margin-left: 1;
+    width: 100%;
+}
+
+.checkbox-label {
+    color: #ffffff;
+    text-style: bold;
+}
+
+.checkbox-description {
+    color: #aaaaaa;
+    text-style: italic;
+}
+
+/* Summary screen */
+#summary-container {
+    height: auto;
+    max-height: 16;
+    overflow-y: scroll;
+    border: solid #333333;
+    padding: 1;
+    margin: 1 0;
+    max-width: 70;
+    width: 90%;
+    align-horizontal: center;
+}
+
+.summary-category {
+    color: #3498db;
+    text-style: bold;
+    margin-top: 1;
+}
+
+.summary-item {
+    color: #ffffff;
+    margin-left: 2;
+}
+
+.summary-empty {
+    color: #777777;
+    margin-left: 2;
+    text-style: italic;
+}
+
+/* Success screen */
+#success-container {
+    layout: vertical;
+    align: center middle;
+    width: 100%;
+    height: 100%;
+}
+
+.success-title {
+    text-style: bold;
+    color: #2ecc71;
+    margin-bottom: 1;
+}
+
+.success-message {
+    color: #aaaaaa;
+    margin-bottom: 2;
+}
+
+.loading {
+    margin-bottom: 2;
+}
+
+/* Dashboard styles */
+#dashboard-container {
+    padding: 1;
+    max-width: 80;
+    width: 95%;
+    margin: 1 0;
+}
+
+#status-grid {
+    grid-size: 2;
+    grid-columns: 1fr 2fr;
+    grid-rows: 5;
+    grid-gutter: 1 2;
+    margin: 1 0 2 0;
+    padding: 1;
+    border: solid #333333;
+    max-width: 70;
+    width: 90%;
+    align-horizontal: center;
+}
+
+.dashboard-label {
+    color: #888888;
+    text-align: right;
+}
+
+.status-active {
+    color: #2ecc71;
+    text-style: bold;
+}
+
+.status-info {
+    color: #3498db;
+}
+
+.section-title {
+    text-style: bold;
+    color: #3498db;
+    margin: 1 0;
+}
+
+/* Log viewer styles */
+#logs-container {
+    padding: 1;
+    max-width: 80;
+    width: 95%;
+    margin: 1 0;
+}
+
+.filter-bar {
+    margin: 1 0;
+    align: center middle;
+}
+
+.filter-label {
+    margin-right: 1;
+}
+
+#logs-table {
+    height: 15;
+    min-height: 10;
+}
+
+/* Config editor styles */
+#editor-container {
+    padding: 1;
+    max-width: 80;
+    width: 95%;
+    margin: 1 0;
+}
+
+#config-editor {
+    height: 16;
+    border: solid #333333;
+    margin: 1 0 2 0;
+    max-width: 70;
+    width: 90%;
+    align-horizontal: center;
+}
+
+/* Peer table styling */
+#peers-table {
+    margin: 1 0 2 0;
+    height: 6;
+}
+
+/* Improve keyboard focus indicators */
+Button:focus {
+    background: #2980b9;
+    border: tall #ffffff;
+}
+
+Checkbox:focus {
+    background: #222222;
+    border: tall #3498db;
+}
+
+Input:focus {
+    border: heavy #3498db;
+}
+
+TextArea:focus {
+    border: heavy #3498db;
+}
+
+/* Help screen styling */
+#help-text {
+    background: #111111;
+    border: solid #3498db;
+    padding: 1;
+    width: 80%;
+    height: auto;
+    margin: 1 0;
+    overflow-y: auto;
+    align-horizontal: center;
+}
+
+/* Add keyboard navigation hints at the bottom */
+.keyboard-hint {
+    text-align: center;
+    margin-top: 1;
+    color: #777777;
+    width: 100%;
+}

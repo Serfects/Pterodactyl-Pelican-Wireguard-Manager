@@ -1,0 +1,3 @@
+# Requirements for Textual example
+textual>=0.20.0,<0.30.0  # Specify a version range that's known to work
+rich>=13.0.0
